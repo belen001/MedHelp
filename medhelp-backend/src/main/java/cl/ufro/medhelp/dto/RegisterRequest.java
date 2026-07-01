@@ -1,5 +1,6 @@
 package cl.ufro.medhelp.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,5 +28,6 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank(message = "El campo password_confirmation es requerido.")
+    @JsonProperty("password_confirmation")
     private String passwordConfirmation;
 }
