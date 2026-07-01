@@ -1,0 +1,856 @@
+{
+  "info": {
+    "_postman_id": "f88a3c1c-4534-4260-bb06-70090c6d12fe",
+    "name": "MedHelp API Collection",
+    "description": "Colección Postman v2.1 corregida para MedHelp. Incluye dose_date en dosis, quantity en medicamentos, códigos 422/409 y endpoints ordenados por MVP.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/register",
+            "description": "Registra un nuevo usuario y retorna token JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Usuario Test\",\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"token\": \"jwt_token_example\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Usuario Test\",\n    \"email\": \"usuario@example.com\",\n    \"role\": \"user\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"email\": [\n      \"El email ya está registrado.\"\n    ],\n    \"password\": [\n      \"La confirmación de contraseña no coincide.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login",
+            "description": "Autentica usuario y retorna token JWT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"usuario@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"token\": \"jwt_token_example\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Usuario Test\",\n    \"email\": \"usuario@example.com\",\n    \"role\": \"user\"\n  }\n}"
+            },
+            {
+              "name": "Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/logout",
+            "description": "Cierra sesión e invalida token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Successfully logged out\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Medications",
+      "item": [
+        {
+          "name": "Get Medications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications?status=active",
+            "description": "Obtiene medicamentos del usuario autenticado. Filtro opcional: status=active|inactive|deleted."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Lisinopril\",\n      \"dosage\": \"10mg\",\n      \"frequency\": \"1 vez al día\",\n      \"quantity\": \"1 pastilla\",\n      \"times\": [\n        \"08:00\"\n      ],\n      \"start_date\": \"2026-10-01\",\n      \"special_instructions\": \"Tomar con agua\",\n      \"photo_url\": \"/storage/medications/lisinopril.jpg\",\n      \"status\": \"active\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Today's Medications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications/today?date=2026-10-24",
+            "description": "Obtiene horario del día con estado de cada dosis. date es opcional; por defecto usa la fecha actual."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"date\": \"2026-10-24\",\n    \"total\": 3,\n    \"completed\": 1,\n    \"schedule\": {\n      \"08:00\": [\n        {\n          \"medication_id\": 1,\n          \"name\": \"Lisinopril\",\n          \"dosage\": \"10mg\",\n          \"quantity\": \"1 pastilla\",\n          \"special_instructions\": \"Tomar con agua\",\n          \"status\": \"taken\",\n          \"taken_at\": \"2026-10-24 08:05:00\"\n        }\n      ],\n      \"16:00\": [\n        {\n          \"medication_id\": 6,\n          \"name\": \"Paracetamol\",\n          \"dosage\": \"500mg\",\n          \"quantity\": \"1 pastilla\",\n          \"special_instructions\": \"Tomar con alimentos\",\n          \"status\": \"pending\",\n          \"taken_at\": null\n        }\n      ]\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Medication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications",
+            "description": "Registra medicamento y sus horarios.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Paracetamol\",\n  \"dosage\": \"500mg\",\n  \"frequency\": \"Cada 8 horas\",\n  \"quantity\": \"1 pastilla\",\n  \"times\": [\n    \"08:00\",\n    \"16:00\",\n    \"00:00\"\n  ],\n  \"start_date\": \"2026-10-24\",\n  \"special_instructions\": \"Tomar con alimentos\",\n  \"photo\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Medication registered successfully\",\n  \"data\": {\n    \"id\": 6,\n    \"name\": \"Paracetamol\",\n    \"dosage\": \"500mg\",\n    \"frequency\": \"Cada 8 horas\",\n    \"quantity\": \"1 pastilla\",\n    \"times\": [\n      \"08:00\",\n      \"16:00\",\n      \"00:00\"\n    ],\n    \"start_date\": \"2026-10-24\",\n    \"special_instructions\": \"Tomar con alimentos\",\n    \"photo_url\": null,\n    \"status\": \"active\"\n  }\n}"
+            },
+            {
+              "name": "Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"name\": [\n      \"El campo name es requerido.\"\n    ],\n    \"dosage\": [\n      \"El campo dosage es requerido.\"\n    ],\n    \"times\": [\n      \"Debe indicar al menos un horario.\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Medication",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications/1",
+            "description": "Actualiza medicamento y reemplaza sus horarios asociados.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lisinopril\",\n  \"dosage\": \"10mg\",\n  \"frequency\": \"1 vez al día\",\n  \"quantity\": \"1 pastilla\",\n  \"times\": [\n    \"08:00\"\n  ],\n  \"start_date\": \"2026-10-01\",\n  \"special_instructions\": \"Tomar con agua\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Medication updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Lisinopril\",\n    \"dosage\": \"10mg\",\n    \"frequency\": \"1 vez al día\",\n    \"quantity\": \"1 pastilla\",\n    \"times\": [\n      \"08:00\"\n    ],\n    \"start_date\": \"2026-10-01\",\n    \"special_instructions\": \"Tomar con agua\",\n    \"status\": \"active\"\n  }\n}"
+            },
+            {
+              "name": "Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Medication not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Medication",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications/1",
+            "description": "Elimina o desactiva medicamento del usuario."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Medication deleted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload Medication Photo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/medications/1/photo",
+            "description": "Sube foto para identificar el medicamento.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "/path/to/medication-photo.jpg"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Photo uploaded successfully\",\n  \"photo_url\": \"/storage/medications/photo_1_12345.jpg\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Doses & History",
+      "item": [
+        {
+          "name": "Confirm Dose",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/doses/confirm",
+            "description": "Confirma una dosis específica por fecha y hora.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": 1,\n  \"dose_date\": \"2026-10-24\",\n  \"dose_time\": \"08:00\",\n  \"taken_at\": \"2026-10-24 08:05:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Dose confirmed\",\n  \"data\": {\n    \"medication_id\": 1,\n    \"dose_date\": \"2026-10-24\",\n    \"dose_time\": \"08:00\",\n    \"taken_at\": \"2026-10-24 08:05:00\",\n    \"status\": \"taken\"\n  }\n}"
+            },
+            {
+              "name": "Already Taken",
+              "status": "Conflict",
+              "code": 409,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Dose already confirmed for this date and time\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Skip Dose",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/doses/skip",
+            "description": "Marca una dosis como saltada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": 1,\n  \"dose_date\": \"2026-10-24\",\n  \"dose_time\": \"08:00\",\n  \"reason\": \"No tenía el medicamento disponible\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Dose skipped\",\n  \"data\": {\n    \"medication_id\": 1,\n    \"dose_date\": \"2026-10-24\",\n    \"dose_time\": \"08:00\",\n    \"status\": \"skipped\",\n    \"reason\": \"No tenía el medicamento disponible\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Snooze Dose",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/doses/snooze",
+            "description": "Pospone un recordatorio. Opcional para MVP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medication_id\": 1,\n  \"dose_date\": \"2026-10-24\",\n  \"dose_time\": \"08:00\",\n  \"minutes\": 15\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Reminder snoozed for 15 minutes\",\n  \"new_reminder_time\": \"2026-10-24 08:20:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/history?start_date=2026-10-01&end_date=2026-10-24",
+            "description": "Obtiene historial de consumo por rango de fechas."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"date\": \"2026-10-24\",\n      \"total_doses\": 3,\n      \"taken\": 1,\n      \"skipped\": 1,\n      \"pending\": 1,\n      \"details\": [\n        {\n          \"medication_id\": 1,\n          \"medication_name\": \"Lisinopril\",\n          \"dosage\": \"10mg\",\n          \"quantity\": \"1 pastilla\",\n          \"time\": \"08:00\",\n          \"status\": \"taken\",\n          \"taken_at\": \"2026-10-24 08:05:00\"\n        },\n        {\n          \"medication_id\": 6,\n          \"medication_name\": \"Paracetamol\",\n          \"dosage\": \"500mg\",\n          \"quantity\": \"1 pastilla\",\n          \"time\": \"16:00\",\n          \"status\": \"pending\",\n          \"taken_at\": null\n        }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Adherence Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/history/stats?period=30",
+            "description": "Obtiene estadísticas de adherencia. Puede implementarse después del historial básico."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"period\": 30,\n    \"total_doses\": 90,\n    \"taken\": 80,\n    \"skipped\": 5,\n    \"missed\": 5,\n    \"adherence_rate\": 88.89,\n    \"by_medication\": [\n      {\n        \"medication_id\": 1,\n        \"name\": \"Lisinopril\",\n        \"total\": 30,\n        \"taken\": 28,\n        \"rate\": 93.3\n      }\n    ]\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "item": [
+        {
+          "name": "Get Contacts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/contacts?relationship=caregiver",
+            "description": "Obtiene contactos externos del usuario. relationship es opcional."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Maria Gómez\",\n      \"phone\": \"+56 9 6000 1234\",\n      \"email\": \"maria@example.com\",\n      \"relationship\": \"caregiver\",\n      \"status\": \"available\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/contacts",
+            "description": "Registra contacto externo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana Martínez\",\n  \"phone\": \"+56 9 6000 9999\",\n  \"email\": \"ana@example.com\",\n  \"relationship\": \"caregiver\",\n  \"status\": \"available\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "status": "Created",
+              "code": 201,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Contact added successfully\",\n  \"data\": {\n    \"id\": 4,\n    \"name\": \"Ana Martínez\",\n    \"phone\": \"+56 9 6000 9999\",\n    \"email\": \"ana@example.com\",\n    \"relationship\": \"caregiver\",\n    \"status\": \"available\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Contact",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/contacts/1",
+            "description": "Actualiza contacto externo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maria Gómez\",\n  \"phone\": \"+56 9 6000 1234\",\n  \"email\": \"maria@example.com\",\n  \"relationship\": \"caregiver\",\n  \"status\": \"do_not_disturb\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Contact updated successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Maria Gómez\",\n    \"phone\": \"+56 9 6000 1234\",\n    \"email\": \"maria@example.com\",\n    \"relationship\": \"caregiver\",\n    \"status\": \"do_not_disturb\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Contact",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/contacts/1",
+            "description": "Elimina contacto externo."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Contact deleted successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User Profile & Preferences",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/profile",
+            "description": "Obtiene perfil del usuario autenticado."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 1,\n    \"name\": \"Usuario Test\",\n    \"email\": \"usuario@example.com\",\n    \"phone\": \"+56 9 6000 0000\",\n    \"birth_date\": \"1980-01-01\",\n    \"blood_type\": \"O+\",\n    \"allergies\": \"Ninguna\",\n    \"medical_conditions\": \"Hipertensión\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/profile",
+            "description": "Actualiza perfil del usuario.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Usuario Test\",\n  \"phone\": \"+56 9 6000 0000\",\n  \"birth_date\": \"1980-01-01\",\n  \"blood_type\": \"O+\",\n  \"allergies\": \"Ninguna\",\n  \"medical_conditions\": \"Hipertensión\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"name\": \"Usuario Test\",\n    \"phone\": \"+56 9 6000 0000\",\n    \"birth_date\": \"1980-01-01\",\n    \"blood_type\": \"O+\",\n    \"allergies\": \"Ninguna\",\n    \"medical_conditions\": \"Hipertensión\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/preferences",
+            "description": "Obtiene preferencias de notificación y accesibilidad."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"push_notifications\": true,\n    \"alert_sound\": \"campana_suave\",\n    \"font_size\": \"grande\",\n    \"language\": \"es\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/preferences",
+            "description": "Actualiza preferencias.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"push_notifications\": true,\n  \"alert_sound\": \"campana_suave\",\n  \"font_size\": \"grande\",\n  \"language\": \"es\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Preferences updated successfully\",\n  \"data\": {\n    \"push_notifications\": true,\n    \"alert_sound\": \"campana_suave\",\n    \"font_size\": \"grande\",\n    \"language\": \"es\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/user/change-password",
+            "description": "Cambia contraseña. Opcional para MVP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"oldpassword123\",\n  \"new_password\": \"newpassword456\",\n  \"new_password_confirmation\": \"newpassword456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Password changed successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reminders",
+      "item": [
+        {
+          "name": "Get Pending Reminders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{base_url}}/api/reminders/pending?date=2026-10-24&now=21:00",
+            "description": "Devuelve recordatorios pendientes cuya hora ya llegó y aún no están tomados/saltados."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"medication_id\": 4,\n      \"name\": \"Atorvastatina\",\n      \"dosage\": \"20mg\",\n      \"quantity\": \"1 pastilla\",\n      \"scheduled_date\": \"2026-10-24\",\n      \"scheduled_time\": \"21:00\",\n      \"special_instructions\": \"Tomar antes de dormir\",\n      \"status\": \"pending\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Guarda token automáticamente si el endpoint retorna token",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "  const json = pm.response.json();",
+          "  if (json.token) { pm.collectionVariables.set(\"access_token\", json.token); }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
