@@ -4,6 +4,7 @@ import cl.ufro.medhelp.controller.AuthController;
 import cl.ufro.medhelp.controller.UserController;
 import cl.ufro.medhelp.dto.ApiResponse;
 import cl.ufro.medhelp.service.AuthService;
+import cl.ufro.medhelp.service.MedicationService;
 import cl.ufro.medhelp.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,6 +86,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserService.InvalidPasswordException.class)
     public ResponseEntity<ApiResponse> handleInvalidPassword(UserService.InvalidPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(MedicationService.MedicationNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleMedicationNotFound(MedicationService.MedicationNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(MedicationService.PhotoUploadException.class)
+    public ResponseEntity<ApiResponse> handlePhotoUpload(MedicationService.PhotoUploadException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ApiResponse.builder()
                         .success(false)
