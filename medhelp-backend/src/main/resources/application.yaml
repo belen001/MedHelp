@@ -15,3 +15,9 @@ spring:
     properties:
       hibernate:
         '[format_sql]': true
+
+# JWT Configuration
+app:
+  jwt:
+    secret: c2VjcmV0LWtleS1mb3ItbWVkaGVscC1hcGktand0LXRva2VuLTIwMjUtc2VjdXJlLWtleS1mb3ItaHMyNTY=
+    expiration-ms: 86400000  # 24 hours
