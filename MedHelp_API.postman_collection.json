@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "f88a3c1c-4534-4260-bb06-70090c6d12fe",
     "name": "MedHelp API Collection",
-    "description": "Colección Postman v2.1 corregida para MedHelp. Incluye dose_date en dosis, quantity en medicamentos, códigos 422/409 y endpoints ordenados por MVP.",
+    "description": "Colección Postman v2.2 para MedHelp. Auth implementado con Spring Security + JWT. Incluye dose_date en dosis, quantity en medicamentos, códigos 422/409/429 y endpoints ordenados por MVP.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -41,11 +41,25 @@
               "body": "{\n  \"success\": true,\n  \"token\": \"jwt_token_example\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Usuario Test\",\n    \"email\": \"usuario@example.com\",\n    \"role\": \"user\"\n  }\n}"
             },
             {
-              "name": "Validation Error",
+              "name": "Email Already Exists",
               "status": "Unprocessable Entity",
               "code": 422,
               "header": [],
-              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"email\": [\n      \"El email ya está registrado.\"\n    ],\n    \"password\": [\n      \"La confirmación de contraseña no coincide.\"\n    ]\n  }\n}"
+              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"email\": [\n      \"El email ya está registrado.\"\n    ]\n  }\n}"
+            },
+            {
+              "name": "Password Mismatch",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"password\": [\n      \"La confirmación de contraseña no coincide.\"\n    ]\n  }\n}"
+            },
+            {
+              "name": "Missing Required Fields",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [],
+              "body": "{\n  \"success\": false,\n  \"errors\": {\n    \"name\": [\n      \"El campo name es requerido.\"\n    ],\n    \"email\": [\n      \"El campo email es requerido.\"\n    ],\n    \"password\": [\n      \"El campo password es requerido.\"\n    ],\n    \"password_confirmation\": [\n      \"El campo password_confirmation es requerido.\"\n    ]\n  }\n}"
             }
           ]
         },
