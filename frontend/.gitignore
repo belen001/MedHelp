@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Archivos generados por Flutter (NO versionar)
+generated_plugins.cmake
+.flutter-plugins
+.flutter-plugins-dependencies
+.dart_tool/
+.gradle/
+build/
