@@ -86,14 +86,15 @@ public class MedicationController {
     // ── Photo Upload ────────────────────────────────────────────
 
     @PostMapping("/{id}/photo")
-    public ResponseEntity<Map<String, Object>> uploadPhoto(
+    public ResponseEntity<ApiResponse> uploadPhoto(
             @PathVariable Long id,
             @RequestParam("photo") MultipartFile file) {
         String photoUrl = medicationService.uploadPhoto(id, file);
-        Map<String, Object> body = new java.util.LinkedHashMap<>();
-        body.put("success", true);
-        body.put("message", "Photo uploaded successfully");
-        body.put("photo_url", photoUrl);
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .success(true)
+                        .message("Photo uploaded successfully")
+                        .data(Map.of("photo_url", photoUrl))
+                        .build());
     }
 }

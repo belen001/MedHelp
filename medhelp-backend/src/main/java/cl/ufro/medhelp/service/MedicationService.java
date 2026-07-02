@@ -1,9 +1,11 @@
 package cl.ufro.medhelp.service;
 
 import cl.ufro.medhelp.dto.*;
+import cl.ufro.medhelp.entity.DoseLog;
 import cl.ufro.medhelp.entity.Medication;
 import cl.ufro.medhelp.entity.MedicationStatus;
 import cl.ufro.medhelp.entity.MedicationTime;
+import cl.ufro.medhelp.repository.DoseLogRepository;
 import cl.ufro.medhelp.repository.MedicationRepository;
 import cl.ufro.medhelp.repository.MedicationTimeRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class MedicationService {
 
     private final MedicationRepository medicationRepository;
     private final MedicationTimeRepository medicationTimeRepository;
+    private final DoseLogRepository doseLogRepository;
 
     private static final String PHOTO_STORAGE_DIR = "storage/medications";
 
@@ -64,24 +67,50 @@ public class MedicationService {
 
         List<Medication> medications = medicationRepository.findTodaySchedule(userId);
 
+        // Load dose logs for this date to determine actual status
+        List<DoseLog> doseLogs = doseLogRepository.findByUserIdAndDoseDateBetween(
+                userId, date, date);
+        Map<String, DoseLog> doseLogMap = new HashMap<>();
+        for (DoseLog dl : doseLogs) {
+            String key = dl.getMedicationId() + "_" + dl.getDoseTime().format(DateTimeFormatter.ofPattern("HH:mm"));
+            doseLogMap.put(key, dl);
+        }
+
         Map<String, List<TodayScheduleResponse.DoseItem>> schedule = new LinkedHashMap<>();
         int total = 0;
         int completed = 0;
+
+        DateTimeFormatter dtFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         for (Medication med : medications) {
             for (MedicationTime mt : med.getTimes()) {
                 String timeKey = mt.getDoseTime().format(DateTimeFormatter.ofPattern("HH:mm"));
                 total++;
 
-                // Status is determined later when dose_logs exist; for now: pending
+                String lookupKey = med.getId() + "_" + timeKey;
+                DoseLog log = doseLogMap.get(lookupKey);
+
+                String status = "pending";
+                String takenAt = null;
+
+                if (log != null) {
+                    status = log.getStatus().name();
+                    if (log.getTakenAt() != null) {
+                        takenAt = log.getTakenAt().format(dtFmt);
+                    }
+                    if ("taken".equals(status)) {
+                        completed++;
+                    }
+                }
+
                 TodayScheduleResponse.DoseItem item = TodayScheduleResponse.DoseItem.builder()
                         .medicationId(med.getId())
                         .name(med.getName())
                         .dosage(med.getDosage())
                         .quantity(med.getQuantity())
                         .specialInstructions(med.getSpecialInstructions())
-                        .status("pending")
-                        .takenAt(null)
+                        .status(status)
+                        .takenAt(takenAt)
                         .build();
 
                 schedule.computeIfAbsent(timeKey, k -> new ArrayList<>()).add(item);

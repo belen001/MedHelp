@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 @Component
@@ -38,28 +41,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Check if token is blacklisted (logged out)
+        // Check if token is blacklisted (logged out) → 401
         if (tokenBlacklistRepository.existsByToken(token)) {
-            filterChain.doFilter(request, response);
+            sendUnauthorizedError(response, "Token has been revoked (logged out)");
             return;
         }
 
-        if (jwtUtil.validateToken(token)) {
-            String email = jwtUtil.getEmailFromToken(token);
-            String role = jwtUtil.getRoleFromToken(token);
-            Long userId = jwtUtil.getUserIdFromToken(token);
-
-            List<SimpleGrantedAuthority> authorities = List.of(
-                    new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())
-            );
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(email, userId, authorities);
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (!jwtUtil.validateToken(token)) {
+            sendUnauthorizedError(response, "Invalid or expired token");
+            return;
         }
 
+        String email = jwtUtil.getEmailFromToken(token);
+        String role = jwtUtil.getRoleFromToken(token);
+        Long userId = jwtUtil.getUserIdFromToken(token);
+
+        List<SimpleGrantedAuthority> authorities = List.of(
+                new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())
+        );
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(email, userId, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
         filterChain.doFilter(request, response);
+    }
+
+    private void sendUnauthorizedError(HttpServletResponse response, String message)
+            throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        PrintWriter writer = response.getWriter();
+        writer.write("{\"success\":false,\"message\":\"" + message + "\"}");
+        writer.flush();
     }
 
     private String extractTokenFromRequest(HttpServletRequest request) {

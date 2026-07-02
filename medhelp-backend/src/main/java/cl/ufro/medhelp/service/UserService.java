@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,14 +30,15 @@ public class UserService {
 
     public UserProfileResponse getProfile() {
         User user = userRepository.findById(getCurrentUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return mapToProfileResponse(user);
     }
 
+    @Transactional
     public UserProfileResponse updateProfile(UpdateProfileRequest request) {
         User user = userRepository.findById(getCurrentUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (request.getName() != null) user.setName(request.getName());
         if (request.getPhone() != null) user.setPhone(request.getPhone());
@@ -59,6 +61,7 @@ public class UserService {
         return mapToPreferencesResponse(prefs);
     }
 
+    @Transactional
     public UserPreferencesResponse updatePreferences(UpdatePreferencesRequest request) {
         Long userId = getCurrentUserId();
         UserPreferences prefs = userPreferencesRepository.findByUserId(userId)
@@ -80,9 +83,10 @@ public class UserService {
 
     // ── Change Password ─────────────────────────────────────────
 
+    @Transactional
     public void changePassword(ChangePasswordRequest request) {
         User user = userRepository.findById(getCurrentUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new InvalidPasswordException("La contraseña actual es incorrecta.");
@@ -117,6 +121,10 @@ public class UserService {
     }
 
     // ── Custom exceptions ───────────────────────────────────────
+
+    public static class UserNotFoundException extends RuntimeException {
+        public UserNotFoundException(String message) { super(message); }
+    }
 
     public static class InvalidPasswordException extends RuntimeException {
         public InvalidPasswordException(String message) {

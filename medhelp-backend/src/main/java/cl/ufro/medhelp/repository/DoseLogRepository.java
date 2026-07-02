@@ -37,10 +37,10 @@ public interface DoseLogRepository extends JpaRepository<DoseLog, Long> {
     @Query(value = """
         SELECT
             COUNT(*) AS total,
-            SUM(CASE WHEN dl.status = 'taken' THEN 1 ELSE 0 END) AS taken,
-            SUM(CASE WHEN dl.status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
-            SUM(CASE WHEN dl.status = 'missed' THEN 1 ELSE 0 END) AS missed,
-            SUM(CASE WHEN dl.status = 'pending' THEN 1 ELSE 0 END) AS pending
+            COALESCE(SUM(CASE WHEN dl.status = 'taken' THEN 1 ELSE 0 END), 0) AS taken,
+            COALESCE(SUM(CASE WHEN dl.status = 'skipped' THEN 1 ELSE 0 END), 0) AS skipped,
+            COALESCE(SUM(CASE WHEN dl.status = 'missed' THEN 1 ELSE 0 END), 0) AS missed,
+            COALESCE(SUM(CASE WHEN dl.status = 'pending' THEN 1 ELSE 0 END), 0) AS pending
         FROM dose_logs dl
         WHERE dl.user_id = :userId
           AND dl.dose_date BETWEEN :startDate AND :endDate
@@ -54,9 +54,9 @@ public interface DoseLogRepository extends JpaRepository<DoseLog, Long> {
             dl.medication_id,
             m.name,
             COUNT(*) AS total,
-            SUM(CASE WHEN dl.status = 'taken' THEN 1 ELSE 0 END) AS taken,
-            SUM(CASE WHEN dl.status = 'skipped' THEN 1 ELSE 0 END) AS skipped,
-            SUM(CASE WHEN dl.status = 'missed' THEN 1 ELSE 0 END) AS missed
+            COALESCE(SUM(CASE WHEN dl.status = 'taken' THEN 1 ELSE 0 END), 0) AS taken,
+            COALESCE(SUM(CASE WHEN dl.status = 'skipped' THEN 1 ELSE 0 END), 0) AS skipped,
+            COALESCE(SUM(CASE WHEN dl.status = 'missed' THEN 1 ELSE 0 END), 0) AS missed
         FROM dose_logs dl
         INNER JOIN medications m ON m.id = dl.medication_id
         WHERE dl.user_id = :userId

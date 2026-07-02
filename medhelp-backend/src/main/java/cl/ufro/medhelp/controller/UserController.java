@@ -1,6 +1,7 @@
 package cl.ufro.medhelp.controller;
 
 import cl.ufro.medhelp.dto.*;
+import cl.ufro.medhelp.exception.PasswordMismatchException;
 import cl.ufro.medhelp.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,19 +80,5 @@ public class UserController {
                         .message("Password changed successfully")
                         .build()
         );
-    }
-
-    // ── Custom exception ────────────────────────────────────────
-
-    public static class PasswordMismatchException extends RuntimeException {
-        private final Map<String, String[]> errors;
-
-        public PasswordMismatchException(Map<String, String[]> errors) {
-            this.errors = errors;
-        }
-
-        public Map<String, String[]> getErrors() {
-            return errors;
-        }
     }
 }

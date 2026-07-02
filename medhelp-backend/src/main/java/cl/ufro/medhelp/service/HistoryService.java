@@ -113,7 +113,7 @@ public class HistoryService {
                     .build());
         }
 
-        int totalDoses = totalTaken + totalSkipped + totalMissed;
+        int totalDoses = logs.size(); // includes pending + taken + skipped + missed
         double adherenceRate = totalDoses > 0
                 ? BigDecimal.valueOf((double) totalTaken / totalDoses * 100)
                     .setScale(1, RoundingMode.HALF_UP).doubleValue()
