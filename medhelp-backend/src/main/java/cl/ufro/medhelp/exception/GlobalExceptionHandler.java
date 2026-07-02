@@ -6,6 +6,7 @@ import cl.ufro.medhelp.dto.ApiResponse;
 import cl.ufro.medhelp.service.AuthService;
 import cl.ufro.medhelp.service.MedicationService;
 import cl.ufro.medhelp.service.UserService;
+import cl.ufro.medhelp.service.ContactService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -105,6 +106,33 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MedicationService.PhotoUploadException.class)
     public ResponseEntity<ApiResponse> handlePhotoUpload(MedicationService.PhotoUploadException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(ContactValidationException.class)
+    public ResponseEntity<ApiResponse> handleContactValidation(ContactValidationException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .errors(ex.getErrors())
+                        .build());
+    }
+
+    @ExceptionHandler(ContactService.ContactNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleContactNotFound(ContactService.ContactNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.builder()
                         .success(false)
                         .message(ex.getMessage())

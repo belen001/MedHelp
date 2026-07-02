@@ -42,7 +42,12 @@ public class MedicationService {
         List<Medication> medications;
 
         if (statusFilter != null && !statusFilter.isBlank()) {
-            MedicationStatus status = MedicationStatus.valueOf(statusFilter);
+            MedicationStatus status;
+            try {
+                status = MedicationStatus.valueOf(statusFilter.toLowerCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Estado no válido: " + statusFilter);
+            }
             medications = medicationRepository.findByUserIdAndStatus(userId, status);
         } else {
             medications = medicationRepository.findByUserId(userId);
