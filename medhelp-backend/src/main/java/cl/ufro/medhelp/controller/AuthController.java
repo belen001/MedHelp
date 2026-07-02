@@ -1,6 +1,7 @@
 package cl.ufro.medhelp.controller;
 
 import cl.ufro.medhelp.dto.*;
+import cl.ufro.medhelp.exception.PasswordMismatchException;
 import cl.ufro.medhelp.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,20 +49,5 @@ public class AuthController {
                         .message("Successfully logged out")
                         .build()
         );
-    }
-
-    /**
-     * Custom exception for password mismatch during registration.
-     */
-    public static class PasswordMismatchException extends RuntimeException {
-        private final Map<String, String[]> errors;
-
-        public PasswordMismatchException(Map<String, String[]> errors) {
-            this.errors = errors;
-        }
-
-        public Map<String, String[]> getErrors() {
-            return errors;
-        }
     }
 }
