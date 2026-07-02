@@ -7,6 +7,7 @@ import cl.ufro.medhelp.service.AuthService;
 import cl.ufro.medhelp.service.MedicationService;
 import cl.ufro.medhelp.service.UserService;
 import cl.ufro.medhelp.service.ContactService;
+import cl.ufro.medhelp.service.DoseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -132,6 +133,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ContactService.ContactNotFoundException.class)
     public ResponseEntity<ApiResponse> handleContactNotFound(ContactService.ContactNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(DoseService.DoseAlreadyConfirmedException.class)
+    public ResponseEntity<ApiResponse> handleDoseAlreadyConfirmed(DoseService.DoseAlreadyConfirmedException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(DoseService.MedicationNotFoundException.class)
+    public ResponseEntity<ApiResponse> handleDoseMedicationNotFound(DoseService.MedicationNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.builder()
                         .success(false)
