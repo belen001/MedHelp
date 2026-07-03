@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../models/index.dart';
 
 /// Excepción personalizada para errores de API
@@ -22,7 +23,9 @@ class ApiException implements Exception {
 /// Simula conexión con backend Spring Boot en http://localhost:8080
 /// En producción, configurar baseUrl desde environment/config.
 class ApiService {
-  static const String baseUrl = 'http://localhost:8080/api';
+  // Base API URL. Override at build time with --dart-define, e.g.:
+  //   flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080/api
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:8080/api');
   String? _token; // JWT token almacenado
 
   /// Obtiene el header Authorization si hay token disponible
@@ -48,80 +51,235 @@ class ApiService {
     _token = null;
   }
 
+  /// POST /api/auth/logout
+  /// Cierra sesión en el backend
+  Future<void> logout() async {
+    try {
+      if (_token == null) {
+        if (kDebugMode) print('⚠ No hay token para logout');
+        clearToken();
+        return;
+      }
+
+      if (kDebugMode) {
+        print(' REQUEST: POST $baseUrl/auth/logout');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/logout'),
+        headers: _getHeaders(),
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw ApiException(
+          message: 'Tiempo de conexión agotado',
+        ),
+      );
+
+      if (kDebugMode) {
+        print('📥 Response Status: ${response.statusCode}');
+        print('📥 Response Body: ${response.body}');
+      }
+
+      // Esperar JSON: { success: true, message: "..." }
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        try {
+          final json = jsonDecode(response.body) as Map<String, dynamic>;
+          if (json['success'] == true) {
+            clearToken();
+            if (kDebugMode) print('Logout exitoso');
+            return;
+          } else {
+            // Aunque backend indique failure, limpiar token localmente
+            clearToken();
+            if (kDebugMode) print('Logout fallido: ${json['message']}');
+            return;
+          }
+        } catch (_) {
+          // Respuesta no JSON válida, igual limpiar token
+          clearToken();
+          return;
+        }
+      }
+
+      // En otros casos, limpiar token localmente
+      clearToken();
+    } catch (e) {
+      if (kDebugMode) print(' Error logout: $e');
+      // Limpiar token de todas formas
+      clearToken();
+    }
+  }
+
   // ============= AUTH ENDPOINTS =============
 
   /// POST /api/auth/login
-  /// Retorna User con token
+  /// Retorna User con token según contrato:
+  /// { success: true, token: "...", user: { id, name, email, role }, message?: "..." }
   Future<User> login({required String email, required String password}) async {
     try {
-      // ignore: unused_local_variable
       final body = jsonEncode({'email': email, 'password': password});
 
-      // Simulación para demo; en producción usar http.post()
       if (kDebugMode) {
-        // Simular respuesta exitosa de login
-        await Future.delayed(const Duration(milliseconds: 500));
-        final mockResponse = {
-          'id': 'user_1',
-          'email': 'user@example.com',
-          'fullName': 'Juan Pérez',
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock',
-          'profileImageUrl': null,
-        };
-        final user = User.fromJson(mockResponse);
-        setToken(user.token);
-        return user;
+        print('🌐 REQUEST: POST $baseUrl/auth/login');
+        print('📤 Body: $body');
       }
 
-      throw ApiException(
-        message: 'No fue posible conectarse con el servidor. Intente nuevamente más tarde',
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
+        body: body,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw ApiException(
+          message: 'Tiempo de conexión agotado. Intente nuevamente',
+        ),
       );
-    } catch (e) {
-      if (e is ApiException) rethrow;
+
+      if (kDebugMode) {
+        print('📥 Response Status: ${response.statusCode}');
+        print('📥 Response Body: ${response.body}');
+      }
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        if (json['success'] == true) {
+          final token = json['token'] as String;
+          final userObj = json['user'] as Map<String, dynamic>;
+          final user = User.fromJson(userObj, token: token);
+          setToken(token);
+          if (kDebugMode) print('Login exitoso para ${user.email}');
+          return user;
+        }
+
+        throw ApiException(
+          message: json['message'] ?? 'Login fallido',
+          statusCode: response.statusCode,
+        );
+      }
+
+      //  Credenciales incorrectas (401)
+      if (response.statusCode == 401) {
+        throw ApiException(
+          message: 'Email o contraseña incorrectos',
+          statusCode: 401,
+        );
+      }
+
+      //  Datos inválidos (400)
+      if (response.statusCode == 400) {
+        final error = jsonDecode(response.body);
+        throw ApiException(
+          message: error['message'] ?? 'Datos inválidos',
+          statusCode: 400,
+        );
+      }
+
+      //  Otros errores HTTP
       throw ApiException(
-        message: 'Error en login',
+        message: 'Error: ${response.statusCode}',
+        statusCode: response.statusCode,
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) print(' Error login: $e');
+      throw ApiException(
+        message: 'Error de conexión: ${e.toString()}',
         originalError: e,
       );
     }
   }
 
   /// POST /api/auth/register
-  /// Retorna User con token
+  /// Body exacto:
+  /// { "name": "Juan Pérez", "email": "juan@mail.com", "password": "123456", "password_confirmation": "123456" }
+  /// Respuesta: { success: true, token: "...", user: { id, name, email, role }, message?: "..." }
   Future<User> register({
+    required String name,
     required String email,
     required String password,
-    required String fullName,
+    required String passwordConfirmation,
   }) async {
     try {
-      // ignore: unused_local_variable
       final body = jsonEncode({
+        'name': name,
         'email': email,
         'password': password,
-        'fullName': fullName,
+        'password_confirmation': passwordConfirmation,
       });
 
-      // Simulación para demo
       if (kDebugMode) {
-        await Future.delayed(const Duration(milliseconds: 500));
-        final mockResponse = {
-          'id': 'user_new_1',
-          'email': email,
-          'fullName': fullName,
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock',
-          'profileImageUrl': null,
-        };
-        final user = User.fromJson(mockResponse);
-        setToken(user.token);
-        return user;
+        print(' REQUEST: POST $baseUrl/auth/register');
+        print(' Body: $body');
       }
 
-      throw ApiException(
-        message: 'No fue posible conectarse con el servidor. Intente nuevamente más tarde',
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+        },
+        body: body,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => throw ApiException(
+          message: 'Tiempo de conexión agotado. Intente nuevamente',
+        ),
       );
-    } catch (e) {
-      if (e is ApiException) rethrow;
+
+      if (kDebugMode) {
+        print(' Response Status: ${response.statusCode}');
+        print(' Response Body: ${response.body}');
+      }
+
+      if (response.statusCode == 201 || (response.statusCode >= 200 && response.statusCode < 300)) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        if (json['success'] == true) {
+          final token = json['token'] as String;
+          final userObj = json['user'] as Map<String, dynamic>;
+          final user = User.fromJson(userObj, token: token);
+          setToken(token);
+          if (kDebugMode) print(' Registro exitoso para ${user.email}');
+          return user;
+        }
+
+        throw ApiException(
+          message: json['message'] ?? 'Registro fallido',
+          statusCode: response.statusCode,
+        );
+      }
+
+      //  Datos inválidos (400)
+      if (response.statusCode == 400) {
+        final error = jsonDecode(response.body);
+        throw ApiException(
+          message: error['message'] ?? 'Datos inválidos',
+          statusCode: 400,
+        );
+      }
+
+      //  Email ya existe (409)
+      if (response.statusCode == 409) {
+        throw ApiException(
+          message: 'Este email ya está registrado',
+          statusCode: 409,
+        );
+      }
+
+      //  Otros errores
       throw ApiException(
-        message: 'Error en registro',
+        message: 'Error: ${response.statusCode}',
+        statusCode: response.statusCode,
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      if (kDebugMode) print(' Error registro: $e');
+      throw ApiException(
+        message: 'Error de conexión: ${e.toString()}',
         originalError: e,
       );
     }
