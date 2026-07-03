@@ -6,6 +6,10 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+
 @Entity
 @Table(name = "users")
 @Getter @Setter
@@ -27,6 +31,7 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     @Builder.Default
     private UserRole role = UserRole.user;
@@ -48,7 +53,8 @@ public class User {
 
     @Column(name = "consent_data_processing", nullable = false)
     @Builder.Default
-    private Boolean consentDataProcessing = false;
+
+    private Boolean consentDataProcessing = Boolean.FALSE;
 
     @Column(name = "consent_given_at")
     private LocalDateTime consentGivenAt;
