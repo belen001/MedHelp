@@ -21,6 +21,7 @@ DROP TABLE IF EXISTS medications CASCADE;
 DROP TABLE IF EXISTS contacts CASCADE;
 DROP TABLE IF EXISTS device_tokens CASCADE;
 DROP TABLE IF EXISTS user_preferences CASCADE;
+DROP TABLE IF EXISTS token_blacklist CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
 DROP TYPE IF EXISTS user_role CASCADE;
@@ -109,6 +110,21 @@ CREATE TABLE users (
     CONSTRAINT users_email_format_chk
         CHECK (email ~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$')
 );
+
+-- =========================================================
+-- Lista negra de tokens JWT
+-- Cubre: POST /api/auth/logout (invalidación de tokens)
+-- Ver medhelp-backend/.../entity/TokenBlacklist.java
+-- =========================================================
+CREATE TABLE token_blacklist (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(512) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_token_blacklist_token
+    ON token_blacklist(token);
 
 -- =========================================================
 -- Preferencias de usuario
