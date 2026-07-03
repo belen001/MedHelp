@@ -14,17 +14,25 @@ void main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  runApp(const MyApp());
+
+  // Inicializar servicios y restaurar sesión antes de arrancar la UI
+  final apiService = ApiService();
+  final authService = AuthService(apiService);
+  await authService.restoreSession();
+
+  runApp(MyApp(apiService: apiService, authService: authService));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiService apiService;
+  final AuthService authService;
+  const MyApp({required this.apiService, required this.authService, super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Instanciar servicios una sola vez
-    final apiService = ApiService();
-    final authService = AuthService(apiService);
+    // Servicios provistos desde main
+    final apiService = this.apiService;
+    final authService = this.authService;
     final doseService = DoseService(apiService);
     final medicationService = MedicationService(apiService);
     final contactService = ContactService(apiService);
