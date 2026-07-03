@@ -1,26 +1,28 @@
-/// Modelo de usuario (autenticación)
+/// Modelo de usuario (autenticación) alineado con la respuesta del backend
 class User {
-  final String id;
+  final int id;
   final String email;
-  final String fullName;
-  final String? profileImageUrl;
+  final String name;
+  final String role;
   final String token; // JWT token para autorización
 
   User({
     required this.id,
     required this.email,
-    required this.fullName,
+    required this.name,
+    required this.role,
     required this.token,
-    this.profileImageUrl,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  /// Construye User a partir del objeto `user` del JSON del backend.
+  /// El token se proporciona por separado (campo `token` en la respuesta raíz).
+  factory User.fromJson(Map<String, dynamic> json, {String? token}) {
     return User(
-      id: json['id'] as String,
+      id: json['id'] is int ? json['id'] as int : int.parse(json['id'].toString()),
       email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      token: json['token'] as String,
-      profileImageUrl: json['profileImageUrl'] as String?,
+      name: json['name'] as String,
+      role: json['role'] as String,
+      token: token ?? (json['token'] as String? ?? ''),
     );
   }
 
@@ -28,9 +30,9 @@ class User {
     return {
       'id': id,
       'email': email,
-      'fullName': fullName,
+      'name': name,
+      'role': role,
       'token': token,
-      'profileImageUrl': profileImageUrl,
     };
   }
 }
