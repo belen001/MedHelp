@@ -19,7 +19,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   bool _isLogin = true; // Alterna entre login y registro
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _fullNameController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
+  final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -35,7 +36,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _fullNameController.dispose();
+    _passwordConfirmController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -59,7 +61,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     return null;
   }
 
-  String? _validateFullName(String? value) {
+  String? _validateName(String? value) {
     if (value == null || value.isEmpty) {
       return 'El nombre completo es obligatorio';
     }
@@ -80,9 +82,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       );
     } else {
       success = await widget.authService.register(
+        name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        fullName: _fullNameController.text.trim(),
+        passwordConfirmation: _passwordConfirmController.text,
       );
     }
 
@@ -91,7 +94,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✓ Toma registrada'),
+          content: Text('Autenticación exitosa'),
           backgroundColor: AppColors.successGreen,
           duration: Duration(seconds: 2),
         ),
@@ -159,9 +162,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             if (!_isLogin) ...[
                               MedHelpTextField(
                                 label: 'Nombre Completo',
-                                controller: _fullNameController,
+                                controller: _nameController,
                                 prefixIcon: Icons.person,
-                                validator: _validateFullName,
+                                validator: _validateName,
                               ),
                               const SizedBox(height: AppSpacing.md),
                             ],
@@ -180,7 +183,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               prefixIcon: Icons.lock,
                               validator: _validatePassword,
                             ),
-                            const SizedBox(height: AppSpacing.lg),
+                            const SizedBox(height: AppSpacing.md),
+                            if (!_isLogin) ...[
+                              MedHelpTextField(
+                                label: 'Confirmar Contraseña',
+                                controller: _passwordConfirmController,
+                                obscureText: true,
+                                prefixIcon: Icons.lock,
+                                validator: (value) {
+                                  if (!_isLogin) {
+                                    if (value == null || value.isEmpty) return 'La confirmación de contraseña es obligatoria';
+                                    if (value != _passwordController.text) return 'Las contraseñas no coinciden';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                            ],
                             PrimaryButton(
                               label: _isLogin ? 'Ingresar' : 'Registrarse',
                               isLoading: widget.authService.isLoading,
