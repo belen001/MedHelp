@@ -85,7 +85,7 @@ class _HomeShellState extends State<HomeShell> {
 
   // Placeholder screens para las otras pantallas
   // Implementar con las funcionalidades específicas del usuario
-  Widget _buildPlaceholder(String title, IconData icon) {
+  Widget _buildPlaceholder(String title, IconData icon, {bool showLogout = false}) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Center(
@@ -100,6 +100,19 @@ class _HomeShellState extends State<HomeShell> {
               'Pantalla en desarrollo',
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            if (showLogout) ...[
+              const SizedBox(height: AppSpacing.lg),
+              ElevatedButton.icon(
+                onPressed: () => widget.authService.logout(),
+                icon: const Icon(Icons.logout),
+                label: const Text('Cerrar sesión'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.errorRed,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(200, 48),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -112,7 +125,7 @@ class _HomeShellState extends State<HomeShell> {
       DashboardScreen(doseService: widget.doseService),
       _buildPlaceholder('Mis Medicinas', Icons.medication),
       _buildPlaceholder('Contactos', Icons.contacts),
-      _buildPlaceholder('Configuración', Icons.settings),
+      _buildPlaceholder('Configuración', Icons.settings, showLogout: true),
     ];
 
     return Scaffold(

@@ -11,7 +11,7 @@ import cl.ufro.medhelp.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -58,6 +58,7 @@ public class AuthService {
         return buildAuthResponse(user, token);
     }
 
+    @Transactional
     public void logout(String token) {
         Date expiration = jwtUtil.getExpirationFromToken(token);
         LocalDateTime expiresAt = expiration.toInstant()
