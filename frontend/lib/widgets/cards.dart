@@ -19,39 +19,39 @@ class DoseCard extends StatelessWidget {
 
   Color _getStatusColor(DoseStatus status) {
     switch (status) {
-      case DoseStatus.completed:
+      case DoseStatus.taken:
         return DoseStatusColors.completed;
       case DoseStatus.pending:
         return DoseStatusColors.pending;
-      case DoseStatus.postponed:
-        return DoseStatusColors.pending;
-      case DoseStatus.overdue:
+      case DoseStatus.skipped:
+        return AppColors.warningOrange;
+      case DoseStatus.missed:
         return DoseStatusColors.overdue;
     }
   }
 
   Color _getStatusBgColor(DoseStatus status) {
     switch (status) {
-      case DoseStatus.completed:
+      case DoseStatus.taken:
         return DoseStatusColors.completedBg;
       case DoseStatus.pending:
         return Colors.transparent;
-      case DoseStatus.postponed:
+      case DoseStatus.skipped:
         return Colors.transparent;
-      case DoseStatus.overdue:
+      case DoseStatus.missed:
         return DoseStatusColors.overdueBg;
     }
   }
 
   IconData _getStatusIcon(DoseStatus status) {
     switch (status) {
-      case DoseStatus.completed:
+      case DoseStatus.taken:
         return Icons.check_circle;
       case DoseStatus.pending:
         return Icons.schedule;
-      case DoseStatus.postponed:
-        return Icons.schedule;
-      case DoseStatus.overdue:
+      case DoseStatus.skipped:
+        return Icons.block;
+      case DoseStatus.missed:
         return Icons.error;
     }
   }
@@ -85,7 +85,7 @@ class DoseCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        dose.dosage,
+                        '${dose.dosage} · ${dose.quantity}',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
@@ -135,16 +135,25 @@ class DoseCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
-                  _formatTime(dose.scheduledTime),
+                  dose.doseTimeStr,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
 
+            if (dose.specialInstructions != null &&
+                dose.specialInstructions!.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                dose.specialInstructions!,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+
             const SizedBox(height: AppSpacing.md),
 
-            // Botones de acción (según estado)
-            if (dose.status == DoseStatus.pending || dose.status == DoseStatus.postponed)
+            // Botones de acción (solo si sigue pendiente)
+            if (dose.status == DoseStatus.pending)
               Row(
                 children: [
                   Expanded(
@@ -193,7 +202,7 @@ class DoseCard extends StatelessWidget {
                   ),
                 ],
               )
-            else if (dose.status == DoseStatus.completed)
+            else if (dose.status == DoseStatus.taken)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Row(
@@ -205,8 +214,10 @@ class DoseCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Text(
-                      'Completado ${_formatTime(dose.completedTime ?? DateTime.now())}',
-                      style: TextStyle(
+                      dose.takenAt != null
+                          ? 'Completado ${_formatTime(dose.takenAt!)}'
+                          : 'Completado',
+                      style: const TextStyle(
                         color: AppColors.successGreen,
                         fontSize: 12,
                       ),
@@ -260,14 +271,14 @@ class MedicationCard extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       Text(
-                        medication.dosage,
+                        '${medication.dosage} · ${medication.quantity}',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
                 ),
                 SizedBox(
-                  width: 40,
+                  width: 80,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -278,7 +289,8 @@ class MedicationCard extends StatelessWidget {
                         ),
                       if (onDelete != null)
                         IconButton(
-                          icon: const Icon(Icons.delete, size: 20, color: AppColors.errorRed),
+                          icon: const Icon(Icons.delete,
+                              size: 20, color: AppColors.errorRed),
                           onPressed: onDelete,
                         ),
                     ],
@@ -289,22 +301,23 @@ class MedicationCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
               children: [
-                _InfoChip(
-                  icon: Icons.repeat,
-                  label: medication.frequency.label,
-                ),
+                _InfoChip(icon: Icons.repeat, label: medication.frequency),
                 _InfoChip(
                   icon: Icons.calendar_today,
                   label:
                       '${medication.startDate.day}/${medication.startDate.month}',
                 ),
+                for (final time in medication.times)
+                  _InfoChip(icon: Icons.access_time, label: time),
               ],
             ),
-            if (medication.instructions != null) ...[
+            if (medication.specialInstructions != null &&
+                medication.specialInstructions!.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Instrucciones: ${medication.instructions}',
+                'Instrucciones: ${medication.specialInstructions}',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
@@ -343,7 +356,7 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 11,
               color: AppColors.primaryBlueDark,
               fontWeight: FontWeight.w500,
