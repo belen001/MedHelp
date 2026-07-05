@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import '../models/index.dart';
 import 'api_service.dart';
 
-/// Servicio de tomas de medicamentos (dosis)
+/// Servicio de tomas de medicamentos (dosis), basado en
+/// GET /api/medications/today.
 class DoseService extends ChangeNotifier {
   final ApiService _apiService;
   List<Dose> _dosesForToday = [];
@@ -15,14 +16,14 @@ class DoseService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Carga tomas de hoy agrupadas por período del día
+  /// Carga las tomas de hoy
   Future<void> loadTodaysDoses() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _dosesForToday = await _apiService.getDosesForDate(DateTime.now());
+      _dosesForToday = await _apiService.getTodaySchedule(date: DateTime.now());
       _isLoading = false;
       notifyListeners();
     } on ApiException catch (e) {
@@ -32,20 +33,15 @@ class DoseService extends ChangeNotifier {
     }
   }
 
-  /// Confirma que una toma fue completada
-  Future<bool> confirmDose(String doseId) async {
+  /// Confirma una toma y refresca la lista para reflejar el estado real
+  Future<bool> confirmDose(Dose dose) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updated = await _apiService.confirmDose(doseId);
-      final index = _dosesForToday.indexWhere((d) => d.id == doseId);
-      if (index >= 0) {
-        _dosesForToday[index] = updated;
-      }
-      _isLoading = false;
-      notifyListeners();
+      await _apiService.confirmDose(dose);
+      await loadTodaysDoses(); // re-sincroniza con el backend
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.message;
@@ -55,20 +51,35 @@ class DoseService extends ChangeNotifier {
     }
   }
 
-  /// Pospone una toma 15 minutos (o X minutos)
-  Future<bool> postponeDose(String doseId, {int minutes = 15}) async {
+  /// Marca una toma como omitida
+  Future<bool> skipDose(Dose dose, {String? reason}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updated = await _apiService.postponeDose(doseId, minutes: minutes);
-      final index = _dosesForToday.indexWhere((d) => d.id == doseId);
-      if (index >= 0) {
-        _dosesForToday[index] = updated;
-      }
+      await _apiService.skipDose(dose, reason: reason);
+      await loadTodaysDoses();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
       _isLoading = false;
       notifyListeners();
+      return false;
+    }
+  }
+
+  /// Pospone una toma X minutos. el backend no cambia el status
+  /// de la dosis al posponer, solo agenda un recordatorio nuevo — así
+  /// que la dosis sigue apareciendo "Pendiente" después de esto.
+  Future<bool> postponeDose(Dose dose, {int minutes = 15}) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.snoozeDose(dose, minutes: minutes);
+      await loadTodaysDoses();
       return true;
     } on ApiException catch (e) {
       _errorMessage = e.message;

@@ -15,14 +15,13 @@ class ContactService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Carga contactos desde API
-  Future<void> loadContacts() async {
+  Future<void> loadContacts({String? relationship}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _contacts = await _apiService.getContacts();
+      _contacts = await _apiService.getContacts(relationship: relationship);
       _isLoading = false;
       notifyListeners();
     } on ApiException catch (e) {
@@ -32,7 +31,6 @@ class ContactService extends ChangeNotifier {
     }
   }
 
-  /// Agrega nuevo contacto
   Future<bool> addContact(Contact contact) async {
     _isLoading = true;
     _errorMessage = null;
@@ -41,6 +39,47 @@ class ContactService extends ChangeNotifier {
     try {
       final created = await _apiService.createContact(contact);
       _contacts.add(created);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateContact(int id, Contact contact) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updated = await _apiService.updateContact(id, contact);
+      final index = _contacts.indexWhere((c) => c.id == id);
+      if (index >= 0) {
+        _contacts[index] = updated;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteContact(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _apiService.deleteContact(id);
+      _contacts.removeWhere((c) => c.id == id);
       _isLoading = false;
       notifyListeners();
       return true;

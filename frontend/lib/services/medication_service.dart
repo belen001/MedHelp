@@ -15,14 +15,13 @@ class MedicationService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  /// Carga lista de medicamentos desde API
-  Future<void> loadMedications() async {
+  Future<void> loadMedications({String? status}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _medications = await _apiService.getMedications();
+      _medications = await _apiService.getMedications(status: status);
       _isLoading = false;
       notifyListeners();
     } on ApiException catch (e) {
@@ -32,7 +31,6 @@ class MedicationService extends ChangeNotifier {
     }
   }
 
-  /// Agrega nuevo medicamento
   Future<bool> addMedication(Medication medication) async {
     _isLoading = true;
     _errorMessage = null;
@@ -52,17 +50,16 @@ class MedicationService extends ChangeNotifier {
     }
   }
 
-  /// Actualiza un medicamento existente
-  Future<bool> updateMedication(String id, Medication medication) async {
+  Future<bool> updateMedication(int id, Medication medication) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _apiService.updateMedication(id, medication);
+      final updated = await _apiService.updateMedication(id, medication);
       final index = _medications.indexWhere((m) => m.id == id);
       if (index >= 0) {
-        _medications[index] = medication;
+        _medications[index] = updated;
       }
       _isLoading = false;
       notifyListeners();
@@ -75,8 +72,7 @@ class MedicationService extends ChangeNotifier {
     }
   }
 
-  /// Elimina un medicamento
-  Future<bool> deleteMedication(String id) async {
+  Future<bool> deleteMedication(int id) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
