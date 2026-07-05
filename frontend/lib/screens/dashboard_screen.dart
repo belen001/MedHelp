@@ -32,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         dose: dose,
         onConfirm: () async {
           Navigator.pop(context);
-          final success = await widget.doseService.confirmDose(dose.id);
+          final success = await widget.doseService.confirmDose(dose);
           if (success && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -45,7 +45,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
         onPostpone: () async {
           Navigator.pop(context);
-          final success = await widget.doseService.postponeDose(dose.id);
+          final success = await widget.doseService.postponeDose(dose);
           if (success && mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -160,8 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             // Tomas del período
                             ...doses.map((dose) {
                               return GestureDetector(
-                                onTap: dose.status == DoseStatus.pending ||
-                                        dose.status == DoseStatus.postponed
+                                onTap: dose.status == DoseStatus.pending
                                     ? () => _showConfirmDialog(dose)
                                     : null,
                                 child: DoseCard(
