@@ -2,6 +2,8 @@ package cl.ufro.medhelp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +30,7 @@ public class UserPreferences {
     private String alertSound = "campana_suave";
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "font_size", nullable = false)
     @Builder.Default
     private FontSizeOption fontSize = FontSizeOption.normal;
