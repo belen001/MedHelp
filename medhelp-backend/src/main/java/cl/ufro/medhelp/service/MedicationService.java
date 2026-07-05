@@ -169,7 +169,12 @@ public class MedicationService {
         medication.setStartDate(request.getStartDate());
         medication.setSpecialInstructions(request.getSpecialInstructions());
 
-        // Replace times
+        // Limpiar la colección y forzar el flush ANTES de agregar los nuevos horarios.
+        // Esto deja que orphanRemoval borre las filas viejas (sin intervención manual)
+        // y evita el choque con la constraint única cuando un horario nuevo coincide con uno viejo.
+        medication.getTimes().clear();
+        medicationRepository.flush();
+
         List<MedicationTime> times = request.getTimes().stream()
                 .map(t -> MedicationTime.builder()
                         .doseTime(LocalTime.parse(t))
