@@ -1,85 +1,87 @@
+
 enum DoseStatus {
-  completed('Completado'),
   pending('Pendiente'),
-  postponed('Pospuesto'),
-  overdue('Vencido');
+  taken('Completado'),
+  skipped('Omitido'),
+  missed('Perdido');
 
   final String label;
   const DoseStatus(this.label);
 }
 
-/// Modelo de toma de medicamento (dosis)
+/// Modelo de toma de medicamento, construido a partir de
+/// GET /api/medications/today (TodayScheduleResponse).
+///
 class Dose {
+
   final String id;
-  final String medicationId;
+  final int medicationId;
   final String medicationName;
   final String dosage;
+  final String quantity;
+  final String? specialInstructions;
   final DateTime scheduledTime;
-  final DateTime? completedTime;
+  final DateTime? takenAt;
   final DoseStatus status;
-  final String? notes;
 
   Dose({
     required this.id,
     required this.medicationId,
     required this.medicationName,
     required this.dosage,
+    required this.quantity,
     required this.scheduledTime,
     required this.status,
-    this.completedTime,
-    this.notes,
+    this.specialInstructions,
+    this.takenAt,
   });
 
-  factory Dose.fromJson(Map<String, dynamic> json) {
+  factory Dose.fromScheduleItem({
+    required DateTime date,
+    required String timeKey,
+    required Map<String, dynamic> json,
+  }) {
+    final parts = timeKey.split(':');
+    final scheduled = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
+
+    final medicationId = json['medication_id'] as int;
+
     return Dose(
-      id: json['id'] as String,
-      medicationId: json['medicationId'] as String,
-      medicationName: json['medicationName'] as String,
+      id: '$medicationId|${formatDate(date)}|$timeKey',
+      medicationId: medicationId,
+      medicationName: json['name'] as String,
       dosage: json['dosage'] as String,
-      scheduledTime: DateTime.parse(json['scheduledTime'] as String),
-      completedTime: json['completedTime'] != null ? DateTime.parse(json['completedTime'] as String) : null,
+      quantity: json['quantity'] as String? ?? '',
+      specialInstructions: json['special_instructions'] as String?,
+      scheduledTime: scheduled,
+      takenAt: json['taken_at'] != null
+          ? parseBackendDateTime(json['taken_at'] as String)
+          : null,
       status: DoseStatus.values.firstWhere(
-        (e) => e.name == (json['status'] as String).toLowerCase(),
+        (e) => e.name == json['status'],
         orElse: () => DoseStatus.pending,
       ),
-      notes: json['notes'] as String?,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'medicationId': medicationId,
-      'medicationName': medicationName,
-      'dosage': dosage,
-      'scheduledTime': scheduledTime.toIso8601String(),
-      'completedTime': completedTime?.toIso8601String(),
-      'status': status.name,
-      'notes': notes,
-    };
-  }
+  /// Fecha en formato yyyy-MM-dd (para enviar a confirm/skip/snooze)
+  String get doseDateStr => formatDate(scheduledTime);
 
-  Dose copyWith({
-    String? id,
-    String? medicationId,
-    String? medicationName,
-    String? dosage,
-    DateTime? scheduledTime,
-    DateTime? completedTime,
-    DoseStatus? status,
-    String? notes,
-  }) {
-    return Dose(
-      id: id ?? this.id,
-      medicationId: medicationId ?? this.medicationId,
-      medicationName: medicationName ?? this.medicationName,
-      dosage: dosage ?? this.dosage,
-      scheduledTime: scheduledTime ?? this.scheduledTime,
-      completedTime: completedTime ?? this.completedTime,
-      status: status ?? this.status,
-      notes: notes ?? this.notes,
-    );
-  }
+  /// Hora en formato HH:mm (para enviar a confirm/skip/snooze)
+  String get doseTimeStr =>
+      '${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}';
+
+  static String formatDate(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  static DateTime parseBackendDateTime(String s) =>
+      DateTime.parse(s.replaceFirst(' ', 'T'));
 
   /// Agrupa dosis por período del día
   static String getTimeOfDayLabel(DateTime dateTime) {

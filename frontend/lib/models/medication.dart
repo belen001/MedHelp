@@ -1,117 +1,83 @@
-enum Frequency {
-  daily('Diariamente'),
-  everyTwoDays('Cada 2 días'),
-  threeTimesADay('3 veces al día'),
-  twiceADay('2 veces al día'),
-  oncePerWeek('Una vez por semana'),
-  custom('Personalizado');
-
-  final String label;
-  const Frequency(this.label);
-}
-
-enum TimeOfDay {
-  morning('Mañana', '08:00'),
-  afternoon('Tarde', '14:00'),
-  night('Noche', '21:00'),
-  custom('Personalizado', '');
-
-  final String label;
-  final String defaultTime;
-  const TimeOfDay(this.label, this.defaultTime);
-}
-
-/// Modelo de medicamento
 class Medication {
-  final String id;
+  final int id;
   final String name;
   final String dosage;
-  final Frequency frequency;
+  final String frequency;
+  final String quantity;
+  final List<String> times; // ej. ["08:00", "16:00"]
   final DateTime startDate;
-  final DateTime? endDate;
-  final String? instructions;
-  final TimeOfDay timeOfDay;
-  final String? customTime; // HH:mm formato si timeOfDay = custom
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? specialInstructions;
+  final String? photoUrl;
+  final String status; // active | inactive | deleted
 
   Medication({
     required this.id,
     required this.name,
     required this.dosage,
     required this.frequency,
+    required this.quantity,
+    required this.times,
     required this.startDate,
-    required this.timeOfDay,
-    this.endDate,
-    this.instructions,
-    this.customTime,
-    required this.createdAt,
-    required this.updatedAt,
+    this.specialInstructions,
+    this.photoUrl,
+    this.status = 'active',
   });
 
   factory Medication.fromJson(Map<String, dynamic> json) {
     return Medication(
-      id: json['id'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
       dosage: json['dosage'] as String,
-      frequency: Frequency.values.firstWhere(
-        (e) => e.name == (json['frequency'] as String).toLowerCase(),
-        orElse: () => Frequency.daily,
-      ),
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] != null ? DateTime.parse(json['endDate'] as String) : null,
-      instructions: json['instructions'] as String?,
-      timeOfDay: TimeOfDay.values.firstWhere(
-        (e) => e.name == (json['timeOfDay'] as String).toLowerCase(),
-        orElse: () => TimeOfDay.morning,
-      ),
-      customTime: json['customTime'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      frequency: json['frequency'] as String,
+      quantity: json['quantity'] as String,
+      times: (json['times'] as List<dynamic>)
+          .map((t) => t as String)
+          .toList(),
+      startDate: DateTime.parse(json['start_date'] as String),
+      specialInstructions: json['special_instructions'] as String?,
+      photoUrl: json['photo_url'] as String?,
+      status: json['status'] as String? ?? 'active',
     );
   }
 
-  Map<String, dynamic> toJson() {
+  /// Body para POST /api/medications y PUT /api/medications/{id}
+  /// (ambos endpoints esperan exactamente los mismos campos).
+  Map<String, dynamic> toRequestJson() {
     return {
-      'id': id,
       'name': name,
       'dosage': dosage,
-      'frequency': frequency.name,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'instructions': instructions,
-      'timeOfDay': timeOfDay.name,
-      'customTime': customTime,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'frequency': frequency,
+      'quantity': quantity,
+      'times': times,
+      'start_date':
+          '${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}',
+      'special_instructions': specialInstructions,
     };
   }
 
   Medication copyWith({
-    String? id,
+    int? id,
     String? name,
     String? dosage,
-    Frequency? frequency,
+    String? frequency,
+    String? quantity,
+    List<String>? times,
     DateTime? startDate,
-    DateTime? endDate,
-    String? instructions,
-    TimeOfDay? timeOfDay,
-    String? customTime,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    String? specialInstructions,
+    String? photoUrl,
+    String? status,
   }) {
     return Medication(
       id: id ?? this.id,
       name: name ?? this.name,
       dosage: dosage ?? this.dosage,
       frequency: frequency ?? this.frequency,
+      quantity: quantity ?? this.quantity,
+      times: times ?? this.times,
       startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-      instructions: instructions ?? this.instructions,
-      timeOfDay: timeOfDay ?? this.timeOfDay,
-      customTime: customTime ?? this.customTime,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      specialInstructions: specialInstructions ?? this.specialInstructions,
+      photoUrl: photoUrl ?? this.photoUrl,
+      status: status ?? this.status,
     );
   }
 }

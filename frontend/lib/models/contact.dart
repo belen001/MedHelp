@@ -1,76 +1,104 @@
-enum ContactType {
-  doctor('Médico'),
+/// Tipo de relación del contacto, alineado con contact_relationship
+enum ContactRelationship {
   caregiver('Cuidador'),
-  emergency('Emergencia');
+  family('Familiar'),
+  monitor('Monitor'),
+  patient('Paciente'),
+  other('Otro');
 
   final String label;
-  const ContactType(this.label);
+  const ContactRelationship(this.label);
 }
 
-/// Modelo de contacto de emergencia (médicos, cuidadores, etc.)
+/// Estado de disponibilidad del contacto, alineado con contact_status.
+enum ContactStatus {
+  available('Disponible'),
+  doNotDisturb('No molestar'),
+  inactive('Inactivo');
+
+  final String label;
+  const ContactStatus(this.label);
+
+  static ContactStatus fromBackend(String value) {
+    switch (value) {
+      case 'do_not_disturb':
+        return ContactStatus.doNotDisturb;
+      case 'inactive':
+        return ContactStatus.inactive;
+      default:
+        return ContactStatus.available;
+    }
+  }
+
+  String get backendValue {
+    switch (this) {
+      case ContactStatus.doNotDisturb:
+        return 'do_not_disturb';
+      case ContactStatus.inactive:
+        return 'inactive';
+      case ContactStatus.available:
+        return 'available';
+    }
+  }
+}
+
 class Contact {
-  final String id;
+  final int id;
   final String name;
-  final String phone;
+  final String? phone;
   final String? email;
-  final String? specialty; // ej. "Cardiólogo"
-  final ContactType type;
-  final DateTime createdAt;
+  final ContactRelationship relationship;
+  final ContactStatus status;
 
   Contact({
     required this.id,
     required this.name,
-    required this.phone,
-    required this.type,
+    required this.relationship,
+    required this.status,
+    this.phone,
     this.email,
-    this.specialty,
-    required this.createdAt,
   });
 
   factory Contact.fromJson(Map<String, dynamic> json) {
     return Contact(
-      id: json['id'] as String,
+      id: json['id'] as int,
       name: json['name'] as String,
-      phone: json['phone'] as String,
+      phone: json['phone'] as String?,
       email: json['email'] as String?,
-      specialty: json['specialty'] as String?,
-      type: ContactType.values.firstWhere(
-        (e) => e.name == (json['type'] as String).toLowerCase(),
-        orElse: () => ContactType.caregiver,
+      relationship: ContactRelationship.values.firstWhere(
+        (e) => e.name == json['relationship'],
+        orElse: () => ContactRelationship.caregiver,
       ),
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      status: ContactStatus.fromBackend(json['status'] as String? ?? 'available'),
     );
   }
 
-  Map<String, dynamic> toJson() {
+  /// Body para POST /api/contacts y PUT /api/contacts/{id}
+  Map<String, dynamic> toRequestJson() {
     return {
-      'id': id,
       'name': name,
-      'phone': phone,
-      'email': email,
-      'specialty': specialty,
-      'type': type.name,
-      'createdAt': createdAt.toIso8601String(),
+      if (phone != null) 'phone': phone,
+      if (email != null) 'email': email,
+      'relationship': relationship.name,
+      'status': status.backendValue,
     };
   }
 
   Contact copyWith({
-    String? id,
+    int? id,
     String? name,
     String? phone,
     String? email,
-    String? specialty,
-    ContactType? type,
-    DateTime? createdAt,
+    ContactRelationship? relationship,
+    ContactStatus? status,
   }) {
     return Contact(
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
       email: email ?? this.email,
-      specialty: specialty ?? this.specialty,
-      type: type ?? this.type,
-      createdAt: createdAt ?? this.createdAt,
+      relationship: relationship ?? this.relationship,
+      status: status ?? this.status,
     );
   }
 }
