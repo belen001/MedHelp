@@ -59,7 +59,21 @@ class _ContactsScreenState extends State<ContactsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+        appBar: AppBar(
+          title: Row(
+            children: const [
+              Icon(Icons.medication, color: AppColors.primaryBlue),
+              SizedBox(width: 8),
+              Text(
+                'MedHelp',
+                style: TextStyle(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
       body: SafeArea(
         child: ListenableBuilder(
           listenable: widget.contactService,
@@ -132,11 +146,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.menu_rounded),
-        onPressed: () {},
-        tooltip: 'Menú',
-      ),
       title: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -157,16 +166,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
           ),
         ],
       ),
-      actions: const [
-        Padding(
-          padding: EdgeInsets.only(right: AppSpacing.md),
-          child: CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.primaryBlueLight,
-            child: Icon(Icons.person, color: AppColors.primaryBlue, size: 20),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -253,7 +252,7 @@ class _ContactCard extends StatelessWidget {
                           width: 8,
                           height: 8,
                           decoration:
-                              BoxDecoration(color: _statusColor, shape: BoxShape.circle),
+                          BoxDecoration(color: _statusColor, shape: BoxShape.circle),
                         ),
                         const SizedBox(width: 6),
                         Text(

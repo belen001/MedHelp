@@ -48,20 +48,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded),
-          onPressed: () {},
-        ),
-        title: const Text('MedHelp'),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: AppSpacing.md),
-            child: CircleAvatar(
-              backgroundColor: AppColors.primaryBlueLight,
-              child: Icon(Icons.person, color: AppColors.primaryBlue),
+        title: Row(
+          children: const [
+            Icon(Icons.medication, color: AppColors.primaryBlue),
+            SizedBox(width: 8),
+            Text(
+              'MedHelp',
+              style: TextStyle(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          )
-        ],
+          ],
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -74,8 +73,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 'Gestiona tus preferencias de la aplicación',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+                  color: AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               _SectionTitle(title: "Cuenta"),
@@ -173,13 +172,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         side: const BorderSide(color: AppColors.errorRed),
                       ),
                       onPressed:
-                          widget.authService.isLoading ? null : _handleLogout,
+                      widget.authService.isLoading ? null : _handleLogout,
                       icon: widget.authService.isLoading
                           ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                           : const Icon(Icons.logout),
                       label: const Text("Cerrar Sesión"),
                     );
@@ -204,10 +203,10 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.primaryBlue,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
+        color: AppColors.primaryBlue,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.2,
+      ),
     );
   }
 }
@@ -253,7 +252,7 @@ class _SettingsCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(subtitle,
                           style:
-                              const TextStyle(color: AppColors.textSecondary)),
+                          const TextStyle(color: AppColors.textSecondary)),
                     ],
                   ),
                 ),

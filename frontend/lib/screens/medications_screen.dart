@@ -58,10 +58,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu_rounded),
-          onPressed: () {},
-        ),
         title: Row(
           children: const [
             Icon(Icons.medication, color: AppColors.primaryBlue),
@@ -75,15 +71,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
             ),
           ],
         ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: AppSpacing.md),
-            child: CircleAvatar(
-              backgroundColor: AppColors.primaryBlueLight,
-              child: Icon(Icons.person, color: AppColors.primaryBlue),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -104,8 +91,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
                       Text(
                         '${medications.length} activas',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -114,47 +101,47 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     child: widget.medicationService.isLoading && medications.isEmpty
                         ? const Center(child: CircularProgressIndicator())
                         : medications.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'Aún no tienes medicamentos registrados',
-                                  style: Theme.of(context).textTheme.bodyMedium,
+                        ? Center(
+                      child: Text(
+                        'Aún no tienes medicamentos registrados',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    )
+                        : RefreshIndicator(
+                      onRefresh: () => widget.medicationService
+                          .loadMedications(status: 'active'),
+                      child: ListView.builder(
+                        itemCount: medications.length,
+                        itemBuilder: (context, index) {
+                          final med = medications[index];
+                          return _MedicationCard(
+                            medication: med,
+                            onEdit: () async {
+                              final result =
+                              await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => AddMedicationScreen(
+                                    medicationService:
+                                    widget.medicationService,
+                                    existing: med,
+                                  ),
                                 ),
-                              )
-                            : RefreshIndicator(
-                                onRefresh: () => widget.medicationService
-                                    .loadMedications(status: 'active'),
-                                child: ListView.builder(
-                                  itemCount: medications.length,
-                                  itemBuilder: (context, index) {
-                                    final med = medications[index];
-                                    return _MedicationCard(
-                                      medication: med,
-                                      onEdit: () async {
-                                        final result =
-                                            await Navigator.push<bool>(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => AddMedicationScreen(
-                                              medicationService:
-                                                  widget.medicationService,
-                                              existing: med,
-                                            ),
-                                          ),
-                                        );
-                                        if (result == true && mounted) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(const SnackBar(
-                                            content: Text('✓ Medicamento actualizado'),
-                                            backgroundColor:
-                                                AppColors.successGreen,
-                                          ));
-                                        }
-                                      },
-                                      onDelete: () => _confirmDelete(med),
-                                    );
-                                  },
-                                ),
-                              ),
+                              );
+                              if (result == true && mounted) {
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(const SnackBar(
+                                  content: Text('✓ Medicamento actualizado'),
+                                  backgroundColor:
+                                  AppColors.successGreen,
+                                ));
+                              }
+                            },
+                            onDelete: () => _confirmDelete(med),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   SizedBox(
@@ -237,8 +224,8 @@ class _MedicationCard extends StatelessWidget {
                 Text(
                   '${medication.dosage} · ${medication.frequency}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
