@@ -9,8 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primaryBlue = Color(0xFF2563EB);
-  static const Color primaryBlueDark = Color(0xFF1D4ED8);
+  static const Color primaryBlue = Color(0xFF15C68F);
+  static const Color primaryBlueDark = Color(0xFF15C68F);
   static const Color primaryBlueLight = Color(0xFFDBEAFE);
 
   static const Color successGreen = Color(0xFF16A34A);
