@@ -123,9 +123,9 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final screens = [
       DashboardScreen(doseService: widget.doseService),
-      _buildPlaceholder('Mis Medicinas', Icons.medication),
-      _buildPlaceholder('Contactos', Icons.contacts),
-      _buildPlaceholder('Configuración', Icons.settings, showLogout: true),
+      const MedicationScreen(),
+      const ContactsScreen(),
+      const SettingsScreen(),
     ];
 
     return Scaffold(
