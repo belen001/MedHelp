@@ -63,130 +63,165 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tomas de Hoy'),
-        elevation: 0,
-      ),
-      body: ListenableBuilder(
-        listenable: widget.doseService,
-        builder: (context, _) {
-          if (widget.doseService.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (widget.doseService.dosesForToday.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    size: 64,
-                    color: AppColors.primaryBlueLight,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    '¡Felicitaciones!',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    'No hay tomas programadas para hoy',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+        title: Row(
+          children: const [
+            Icon(Icons.medication, color: AppColors.primaryBlue),
+            SizedBox(width: 8),
+            Text(
+              'MedHelp',
+              style: TextStyle(
+                color: AppColors.primaryBlue,
+                fontWeight: FontWeight.bold,
               ),
-            );
-          }
-
-          final dosesByTime = widget.doseService.getDosesByTimeOfDay();
-          final timeOrder = ['Mañana', 'Tarde', 'Noche'];
-
-          return RefreshIndicator(
-            onRefresh: _loadDoses,
-            child: CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final timeLabel =
-                            timeOrder[index % timeOrder.length];
-
-                        if (!dosesByTime.containsKey(timeLabel)) {
-                          return const SizedBox.shrink();
-                        }
-
-                        final doses = dosesByTime[timeLabel]!;
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Encabezado del período del día
-                            Row(
-                              children: [
-                                Container(
-                                  width: 4,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue,
-                                    borderRadius: BorderRadius.circular(2),
-                                  ),
-                                ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Text(
-                                  timeLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  '${doses.length} ${doses.length == 1 ? 'toma' : 'tomas'}',
-                                  style:
-                                      Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: AppSpacing.md),
-
-                            // Tomas del período
-                            ...doses.map((dose) {
-                              return GestureDetector(
-                                onTap: dose.status == DoseStatus.pending
-                                    ? () => _showConfirmDialog(dose)
-                                    : null,
-                                child: DoseCard(
-                                  dose: dose,
-                                  isLoading: widget.doseService.isLoading,
-                                  onConfirm: () =>
-                                      _showConfirmDialog(dose),
-                                  onPostpone: () {
-                                    _showConfirmDialog(dose);
-                                  },
-                                ),
-                              );
-                            }),
-
-                            const SizedBox(height: AppSpacing.lg),
-                          ],
-                        );
-                      },
-                      childCount: timeOrder.length,
-                    ),
-                  ),
-                ),
-              ],
             ),
-          );
-        },
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              0,
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Tomas de Hoy',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListenableBuilder(
+              listenable: widget.doseService,
+              builder: (context, _) {
+                if (widget.doseService.isLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                if (widget.doseService.dosesForToday.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 64,
+                          color: AppColors.primaryBlueLight,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          '¡Felicitaciones!',
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          'No hay tomas programadas para hoy',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final dosesByTime = widget.doseService.getDosesByTimeOfDay();
+                final timeOrder = ['Mañana', 'Tarde', 'Noche'];
+
+                return RefreshIndicator(
+                  onRefresh: _loadDoses,
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                              final timeLabel =
+                              timeOrder[index % timeOrder.length];
+
+                              if (!dosesByTime.containsKey(timeLabel)) {
+                                return const SizedBox.shrink();
+                              }
+
+                              final doses = dosesByTime[timeLabel]!;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Encabezado del período del día
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 4,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primaryBlue,
+                                          borderRadius:
+                                          BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Text(
+                                        timeLabel,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      Text(
+                                        '${doses.length} ${doses.length == 1 ? 'toma' : 'tomas'}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: AppSpacing.md),
+
+                                  // Tomas del período
+                                  ...doses.map((dose) {
+                                    return GestureDetector(
+                                      onTap: dose.status == DoseStatus.pending
+                                          ? () => _showConfirmDialog(dose)
+                                          : null,
+                                      child: DoseCard(
+                                        dose: dose,
+                                        isLoading:
+                                        widget.doseService.isLoading,
+                                        onConfirm: () =>
+                                            _showConfirmDialog(dose),
+                                        onPostpone: () {
+                                          _showConfirmDialog(dose);
+                                        },
+                                      ),
+                                    );
+                                  }),
+
+                                  const SizedBox(height: AppSpacing.lg),
+                                ],
+                              );
+                            },
+                            childCount: timeOrder.length,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -245,9 +280,9 @@ class DoseNotificationModal extends StatelessWidget {
                     Text(
                       'Es hora de tomar tu medicamento',
                       style:
-                          Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                              ),
+                      Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -265,9 +300,9 @@ class DoseNotificationModal extends StatelessWidget {
                                 .textTheme
                                 .headlineMedium
                                 ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
@@ -294,7 +329,7 @@ class DoseNotificationModal extends StatelessWidget {
                           backgroundColor: AppColors.successGreen,
                           shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(AppRadius.button),
+                            BorderRadius.circular(AppRadius.button),
                           ),
                         ),
                         onPressed: onConfirm,
@@ -326,16 +361,20 @@ class DoseNotificationModal extends StatelessWidget {
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius:
-                                BorderRadius.circular(AppRadius.button),
+                            BorderRadius.circular(AppRadius.button),
                           ),
                         ),
                         onPressed: onPostpone,
-                        child: const Text(
-                          'Posponer 15 minutos',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        child: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Posponer 15 minutos',
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),

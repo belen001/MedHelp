@@ -188,15 +188,19 @@ class DoseCard extends StatelessWidget {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 44),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                       ),
                       onPressed: isLoading ? null : onPostpone,
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.schedule, size: 18),
-                          SizedBox(width: 8),
-                          Text('Posponer 15m'),
-                        ],
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.schedule, size: 18),
+                            SizedBox(width: 8),
+                            Text('Posponer 15m'),
+                          ],
+                        ),
                       ),
                     ),
                   ),
