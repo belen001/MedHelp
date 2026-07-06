@@ -123,24 +123,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryBlueLight,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.medication,
-                              size: 40,
-                              color: AppColors.primaryBlue,
+                          SizedBox(
+                            width: 200,
+                            height: 200,
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              fit: BoxFit.contain,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.lg),
-                          Text(
-                            'MedHelp',
-                            style: Theme.of(context).textTheme.headlineLarge,
-                          ),
+
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             _isLogin

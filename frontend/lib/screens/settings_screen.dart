@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/screens/terms_conditions_screen.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
+import 'adverse_reaction_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final AuthService authService;
@@ -82,7 +84,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.lock,
                 title: "Privacidad",
                 subtitle: "Controla quién ve tu información",
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TermsConditionsScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: AppSpacing.lg),
               _SectionTitle(title: "Preferencias"),
@@ -142,7 +151,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.text_increase,
                 title: "Tamaño de Fuente",
                 subtitle: "Grande",
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AdverseReactionScreen(),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: AppSpacing.lg),
               SizedBox(
