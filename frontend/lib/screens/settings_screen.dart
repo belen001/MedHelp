@@ -83,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingsCard(
                 icon: Icons.lock,
                 title: "Privacidad",
-                subtitle: "Controla quién ve tu información",
+                subtitle: "Revisa los términos y condiciones de la aplicación",
                 onTap: () {
                   Navigator.push(
                     context,
@@ -149,8 +149,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: AppSpacing.sm),
               _SettingsCard(
                 icon: Icons.text_increase,
-                title: "Tamaño de Fuente",
-                subtitle: "Grande",
+                title: "Formulario de reacción adversa",
+                subtitle: "Realiza un reporte por reaccion adversa a un medicamento",
                 onTap: () {
                   Navigator.push(
                     context,
