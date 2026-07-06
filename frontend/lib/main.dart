@@ -83,49 +83,13 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _selectedIndex = 0;
 
-  // Placeholder screens para las otras pantallas
-  // Implementar con las funcionalidades específicas del usuario
-  Widget _buildPlaceholder(String title, IconData icon, {bool showLogout = false}) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: AppColors.primaryBlueLight),
-            const SizedBox(height: AppSpacing.md),
-            Text(title),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Pantalla en desarrollo',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            if (showLogout) ...[
-              const SizedBox(height: AppSpacing.lg),
-              ElevatedButton.icon(
-                onPressed: () => widget.authService.logout(),
-                icon: const Icon(Icons.logout),
-                label: const Text('Cerrar sesión'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.errorRed,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(200, 48),
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final screens = [
       DashboardScreen(doseService: widget.doseService),
-      const MedicationScreen(),
-      const ContactsScreen(),
-      const SettingsScreen(),
+      MedicationScreen(medicationService: widget.medicationService),
+      ContactsScreen(contactService: widget.contactService),
+      SettingsScreen(authService: widget.authService),
     ];
 
     return Scaffold(

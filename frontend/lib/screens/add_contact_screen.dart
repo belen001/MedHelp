@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import '../models/index.dart';
+import '../services/contact_service.dart';
 import '../theme/app_theme.dart';
 
 class AddContactScreen extends StatefulWidget {
-  const AddContactScreen({super.key});
+  final ContactService contactService;
+
+  const AddContactScreen({required this.contactService, super.key});
 
   @override
   State<AddContactScreen> createState() => _AddContactScreenState();
@@ -12,8 +16,8 @@ class _AddContactScreenState extends State<AddContactScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  String? _relationship;
-  bool _shareProgress = false;
+  ContactRelationship? _relationship;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -22,7 +26,7 @@ class _AddContactScreenState extends State<AddContactScreen> {
     super.dispose();
   }
 
-  void _saveContact() {
+  Future<void> _saveContact() async {
     final name = _nameController.text.trim();
     final phone = _phoneController.text.trim();
 
@@ -33,8 +37,32 @@ class _AddContactScreenState extends State<AddContactScreen> {
       return;
     }
 
-    // TODO: conectar con ContactService
-    Navigator.pop(context);
+    setState(() => _isSaving = true);
+
+    final contact = Contact(
+      id: 0,
+      name: name,
+      phone: phone,
+      relationship: _relationship!,
+      status: ContactStatus.available,
+    );
+
+    final success = await widget.contactService.addContact(contact);
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    if (success) {
+      Navigator.pop(context, true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(widget.contactService.errorMessage ??
+              'No fue posible conectarse con el servidor. Intente nuevamente más tarde'),
+          backgroundColor: AppColors.errorRed,
+        ),
+      );
+    }
   }
 
   @override
@@ -56,41 +84,28 @@ class _AddContactScreenState extends State<AddContactScreen> {
           )
         ],
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Nuevo Contacto",
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              Text("Nuevo Contacto", style: Theme.of(context).textTheme.headlineMedium),
               const SizedBox(height: 8),
               Text(
                 "Añade a una persona a tu red de apoyo.",
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-
               const SizedBox(height: AppSpacing.lg),
-
-              // Nombre
               _buildInput(
                 label: "Nombre del contacto",
                 controller: _nameController,
                 hint: "Ej. María García",
                 icon: Icons.person,
               ),
-
               const SizedBox(height: AppSpacing.md),
-
-              // Relación
-              _buildDropdown(),
-
+              _buildRelationshipDropdown(),
               const SizedBox(height: AppSpacing.md),
-
-              // Teléfono
               _buildInput(
                 label: "Número de teléfono",
                 controller: _phoneController,
@@ -98,87 +113,25 @@ class _AddContactScreenState extends State<AddContactScreen> {
                 icon: Icons.phone,
                 keyboard: TextInputType.phone,
               ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Switch compartir progreso
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  border: Border.all(color: AppColors.divider),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.share, color: AppColors.primaryBlue),
-                    const SizedBox(width: AppSpacing.md),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Compartir mi progreso médico",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Text(
-                            "Permite que vea tu cumplimiento",
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: _shareProgress,
-                      activeColor: AppColors.primaryBlue,
-                      onChanged: (v) => setState(() => _shareProgress = v),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Upload foto (UI mock)
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.divider, style: BorderStyle.solid),
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                ),
-                child: Column(
-                  children: const [
-                    Icon(Icons.add_a_photo, size: 48, color: AppColors.primaryBlue),
-                    SizedBox(height: 12),
-                    Text(
-                      "Subir foto del contacto",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Ayuda a identificarlo rápidamente",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 100),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
       ),
-
-      // Botón inferior fijo
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: SizedBox(
             height: 56,
             child: ElevatedButton.icon(
-              onPressed: _saveContact,
-              icon: const Icon(Icons.save),
+              onPressed: _isSaving ? null : _saveContact,
+              icon: _isSaving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.save),
               label: const Text("Guardar Contacto"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBlue,
@@ -221,19 +174,17 @@ class _AddContactScreenState extends State<AddContactScreen> {
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildRelationshipDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("Relación", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: _relationship,
-          items: const [
-            DropdownMenuItem(value: "familiar", child: Text("Familiar")),
-            DropdownMenuItem(value: "cuidador", child: Text("Cuidador")),
-            DropdownMenuItem(value: "medico", child: Text("Médico")),
-          ],
+        DropdownButtonFormField<ContactRelationship>(
+          initialValue: _relationship,
+          items: ContactRelationship.values
+              .map((r) => DropdownMenuItem(value: r, child: Text(r.label)))
+              .toList(),
           onChanged: (v) => setState(() => _relationship = v),
           decoration: InputDecoration(
             border: OutlineInputBorder(

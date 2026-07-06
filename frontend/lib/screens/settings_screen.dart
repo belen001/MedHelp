@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final AuthService authService;
+
+  const SettingsScreen({required this.authService, super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -10,6 +13,34 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool notificationsEnabled = true;
+
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cerrar sesión'),
+        content: const Text('¿Seguro que quieres cerrar tu sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Cerrar sesión',
+                style: TextStyle(color: AppColors.errorRed)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      // MyApp escucha authService con ListenableBuilder — al hacer
+      // logout, isAuthenticated pasa a false y vuelve a WelcomeScreen
+      // automáticamente, sin necesidad de navegar manualmente.
+      await widget.authService.logout();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,52 +61,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           )
         ],
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER
-              Text(
-                'Ajustes',
-                style: Theme.of(context).textTheme.headlineLarge,
-              ),
+              Text('Ajustes', style: Theme.of(context).textTheme.headlineLarge),
               const SizedBox(height: 4),
               Text(
                 'Gestiona tus preferencias de la aplicación',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                      color: AppColors.textSecondary,
+                    ),
               ),
-
               const SizedBox(height: AppSpacing.lg),
-
-              // ======================
-              // CUENTA
-              // ======================
               _SectionTitle(title: "Cuenta"),
-
               const SizedBox(height: AppSpacing.sm),
-
               _SettingsCard(
                 icon: Icons.lock,
                 title: "Privacidad",
                 subtitle: "Controla quién ve tu información",
                 onTap: () {},
               ),
-
               const SizedBox(height: AppSpacing.lg),
-
-              // ======================
-              // PREFERENCIAS
-              // ======================
               _SectionTitle(title: "Preferencias"),
-
               const SizedBox(height: AppSpacing.sm),
-
-              // NOTIFICACIONES
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
@@ -85,19 +96,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       backgroundColor: AppColors.primaryBlueLight,
-                      child: const Icon(
+                      child: Icon(
                         Icons.notifications_active,
                         color: AppColors.primaryBlue,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
-
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             "Notificaciones Push",
                             style: TextStyle(fontWeight: FontWeight.w600),
@@ -110,7 +120,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ],
                       ),
                     ),
-
                     Switch(
                       value: notificationsEnabled,
                       activeColor: AppColors.primaryBlue,
@@ -121,41 +130,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(height: AppSpacing.sm),
-
               _SettingsCard(
                 icon: Icons.volume_up,
                 title: "Sonido de Alerta",
                 subtitle: "Campana suave",
                 onTap: () {},
               ),
-
               const SizedBox(height: AppSpacing.sm),
-
               _SettingsCard(
                 icon: Icons.text_increase,
                 title: "Tamaño de Fuente",
                 subtitle: "Grande",
                 onTap: () {},
               ),
-
               const SizedBox(height: AppSpacing.lg),
-
-              // ======================
-              // CERRAR SESIÓN
-              // ======================
               SizedBox(
                 width: double.infinity,
                 height: 56,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.errorRed,
-                    side: const BorderSide(color: AppColors.errorRed),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Cerrar Sesión"),
+                child: ListenableBuilder(
+                  listenable: widget.authService,
+                  builder: (context, _) {
+                    return OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.errorRed,
+                        side: const BorderSide(color: AppColors.errorRed),
+                      ),
+                      onPressed:
+                          widget.authService.isLoading ? null : _handleLogout,
+                      icon: widget.authService.isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.logout),
+                      label: const Text("Cerrar Sesión"),
+                    );
+                  },
                 ),
               ),
             ],
@@ -166,9 +178,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 }
 
-// ==========================
-// SECTION TITLE
-// ==========================
 class _SectionTitle extends StatelessWidget {
   final String title;
 
@@ -179,17 +188,14 @@ class _SectionTitle extends StatelessWidget {
     return Text(
       title.toUpperCase(),
       style: Theme.of(context).textTheme.labelLarge?.copyWith(
-        color: AppColors.primaryBlue,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
-      ),
+            color: AppColors.primaryBlue,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
     );
   }
 }
 
-// ==========================
-// SETTINGS CARD
-// ==========================
 class _SettingsCard extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -221,26 +227,20 @@ class _SettingsCard extends StatelessWidget {
                   backgroundColor: AppColors.primaryBlueLight,
                   child: Icon(icon, color: AppColors.primaryBlue),
                 ),
-
                 const SizedBox(width: AppSpacing.md),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
+                      Text(title,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(color: AppColors.textSecondary),
-                      ),
+                      Text(subtitle,
+                          style:
+                              const TextStyle(color: AppColors.textSecondary)),
                     ],
                   ),
                 ),
-
                 const Icon(Icons.chevron_right),
               ],
             ),
