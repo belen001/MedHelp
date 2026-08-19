@@ -1,0 +1,592 @@
+﻿Especificación de requisitos de software para aplicación MedHelp
+	Rev. 1.2
+Pág. 
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	Especificación de requisitos de software
+
+
+Proyecto: MedHelp 
+Revisión 1.6 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+	
+
+	
+
+
+
+	Ficha del documento
+
+
+
+
+Fecha
+	Revisión
+	Autor
+	Verificado dep. calidad.
+	23/04/2026
+	1.0
+	Lorenzo López
+“Redacción de Introducción y Propósito”
+	
+
+	23/04/2026
+	1.1
+	Francisco Ceballos
+“Redacción de Definiciones, Referencias y Resumen”
+	
+
+	24/04/2026
+	1.2
+	Belén Bravo
+“Establecimiento del personal involucrado y redacción del Alcance”
+	
+
+
+
+	21/05/2026
+	1.3
+	Lorenzo López
+“Redacción de características de los usuarios”
+	
+
+	23/05/2026
+	1.4
+	Lorenzo Lopez
+“Redacción de Restricciones”
+	
+
+	24/05/2026
+	1.5
+	Francisco Ceballos
+“Redacción de Evolución Previsible del Sistema“
+	
+
+	24/05/2026
+	1.6
+	Francisco Ceballos
+“Redacción de Restricciones y Dependencias”
+	
+
+	26/05/2026
+	1.7
+	Belén Bravo
+“Redacción de  Perspectiva del producto y Funcionalidad del Producto”
+	
+
+	14/06/2026
+	1.8
+	Francisco Ceballos
+“Correcciones en Características de los usuarios’ y ' ’Restricciones’.”
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Documento validado por las partes en fecha: 
+
+
+Por el cliente
+	Por la empresa suministradora
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	Fdo. D./ Dña 
+	Fdo. D./Dña 
+	
+
+Contenido
+
+
+Ficha del documento        2
+Contenido        3
+1 Introducción        3
+1.1 Propósito        4
+1.2 Alcance        5
+1.3 Personal involucrado        5
+1.4 Definiciones, acrónimos y abreviaturas        6
+1.5 Referencias        6
+1.6 Resumen        6
+2 Descripción general        7
+2.1 Perspectiva del producto        7
+2.2 Funcionalidad del producto        7
+2.3 Características de los usuarios        7
+2.4 Restricciones        7
+2.5 Suposiciones y dependencias        7
+2.6 Evolución previsible del sistema        8
+3 Requisitos específicos        8
+3.1 Requisitos comunes de los interfaces        8
+3.1.1 Interfaces de usuario        8
+3.1.2 Interfaces de hardware        8
+3.1.3 Interfaces de software        8
+3.1.4 Interfaces de comunicación        9
+3.2 Requisitos funcionales        9
+3.2.1 Requisito funcional 1        9
+3.2.2 Requisito funcional 2        9
+3.2.3 Requisito funcional 3        9
+3.2.4 Requisito funcional n        9
+3.3 Requisitos no funcionales        9
+3.3.1 Requisitos de rendimiento        9
+3.3.2 Seguridad        9
+3.3.3 Fiabilidad        10
+3.3.4 Disponibilidad        10
+3.3.5 Mantenibilidad        10
+3.3.6 Portabilidad        10
+3.4 Otros requisitos        10
+4 Apéndices        10
+
+
+________________
+1. Introducción
+El contexto del problema aborda la dificultad que presentan los pacientes para mantener una adecuada adherencia a sus tratamientos farmacológicos, especialmente en enfermedades crónicas. Diversos estudios han evidenciado que la falta de adherencia constituye un problema relevante en el ámbito de la salud, afectando directamente la efectividad de los tratamientos y los resultados clínicos. En particular, investigaciones realizadas en Chile indican que entre un 76% y un 86% de los pacientes no presentan adherencia adecuada a sus tratamientos terapéuticos, lo que evidencia la magnitud del problema y la necesidad de implementar estrategias que contribuyan a mejorar esta situación [1].
+La baja adherencia puede estar asociada a múltiples factores, tales como el olvido en la toma de medicamentos, la complejidad de los esquemas terapéuticos o la falta de seguimiento continuo. Esta problemática no solo impacta la salud del paciente, sino que también genera un uso ineficiente de los recursos del sistema de salud, dificultando el control de enfermedades y aumentando el riesgo de complicaciones.
+En el contexto nacional, el desarrollo de soluciones tecnológicas orientadas al ámbito de la salud debe considerar el cumplimiento del marco normativo vigente. En este sentido, la Ley N° 20.584 establece los derechos y deberes de las personas en relación con acciones vinculadas a su atención en salud, incluyendo la confidencialidad y protección de la información clínica [2]. Por su parte, la Ley N° 21.668 regula aspectos relacionados con la protección de datos personales en entornos digitales, fortaleciendo las obligaciones respecto al tratamiento de información sensible [3]. Asimismo, la Ley N° 21.719 introduce disposiciones complementarias en materia de salud y gestión de información, reforzando la necesidad de resguardar la seguridad y el uso adecuado de los datos de los pacientes [4].
+A raíz de lo anterior, surge la necesidad de contar con herramientas tecnológicas que apoyen a los usuarios en la gestión de su medicación diaria. En este contexto, se propone el desarrollo de la aplicación móvil MedHelp, orientada a la gestión y seguimiento del consumo de medicamentos, con el objetivo de mejorar la adherencia a los tratamientos mediante notificaciones automatizadas y mecanismos de monitoreo.
+La presente Especificación de Requisitos de Software (SRS) tiene como objetivo definir de manera clara y estructurada los requisitos funcionales y no funcionales del sistema MedHelp. Este documento está dirigido a desarrolladores, evaluadores y demás partes interesadas, proporcionando una base común para la comprensión del sistema a desarrollar.
+El alcance del sistema incluye el registro de tratamientos farmacológicos, la generación de recordatorios, el almacenamiento del historial de consumo y la notificación a contactos externos en caso de incumplimiento en la toma de medicamentos. No se contemplan funcionalidades de diagnóstico médico, prescripción de tratamientos ni integración directa con sistemas clínicos externos.
+Finalmente, este documento incluye definiciones, acrónimos y referencias necesarias para su correcta interpretación, así como una descripción general del sistema y el detalle de los requisitos específicos que deberá cumplir la aplicación, proporcionando una visión integral de la solución propuesta.
+   1. Propósito
+El propósito fundamental de este documento es definir de manera exhaustiva los requisitos funcionales y no funcionales de la plataforma MedHelp. Este documento servirá como la base técnica para el diseño, desarrollo y validación del sistema, asegurando que todas las partes interesadas tengan una comprensión compartida de sus capacidades y alcances
+Este documento está dirigido principalmente al equipo de desarrollo de software, a los stakeholders identificados (médicos, farmacéuticos y administradores de instituciones médicas) y a los responsables de la validación del sistema bajo la normativa legal vigente en Chile (como las leyes N° 21.719, 20.584 y 21.668)
+   2. Alcance
+El proyecto MedHelp, consiste en el desarrollo de una aplicación móvil orientada a la gestión y seguimiento del consumo de medicamentos por parte de los usuarios, con el objetivo de mejorar la adherencia a tratamientos médicos mediante mecanismos automatizados de notificación y control.
+El usuario podrá registrar sus medicamentos, indicando información relevante como dosis, frecuencia y horarios de administración. A partir de estos datos, la aplicación generará notificaciones en los momentos correspondientes, con el fin de recordar al usuario la toma oportuna de cada medicamento.
+Asimismo, el sistema contempla funcionalidades para el registro y consulta del historial de consumo, permitiendo el monitoreo del cumplimiento del tratamiento. El usuario podrá confirmar la toma de medicamentos, quedando esta acción almacenada para su posterior visualización y análisis.
+Adicionalmente, el sistema permitirá al usuario designar contactos externos (por ejemplo, familiares o cuidadores), quienes podrán recibir notificaciones en caso de que no se registre la confirmación de una dosis dentro del intervalo de tiempo establecido. Esta funcionalidad tiene como objetivo reforzar el seguimiento del tratamiento mediante apoyo de terceros autorizados.
+La aplicación operará sobre una plataforma móvil y gestionará la información mediante almacenamiento local y/o servicios remotos, asegurando la persistencia de los datos. El sistema podrá emitir alertas complementarias tanto al usuario como a los contactos designados en caso de incumplimiento.
+El alcance del sistema se limita a la gestión, notificación y seguimiento del consumo de medicamentos, excluyendo funcionalidades de diagnóstico médico, prescripción de tratamientos o integración directa con sistemas clínicos externos.
+   3. Personal involucrado
+Nombre
+	Belén Anaís Bravo Sepúlveda
+	Rol
+	Desarrollador Backend
+	Categoría profesional
+	Ingeniería Informática
+	Responsabilidades
+	Desarrollar software y recopilar requerimientos de software
+	Información de contacto
+	b.bravo02@ufromail.cl
+	Aprobación
+	
+
+	
+
+Nombre
+	Francisco Andrés Ceballos Montecinos
+	Rol
+	Jefe Proyecto
+	Categoría profesional
+	Ingeniería Informática
+	Responsabilidades
+	Desarrollar software y recopilar requerimientos de software
+	Información de contacto
+	f.ceballos07@ufromail.cl
+	Aprobación
+	
+
+	
+
+Nombre
+	Lorenzo Andrés López López
+	Rol
+	Diseñador + Desarrollador Frontend
+	Categoría profesional
+	Ingeniería Informática
+	Responsabilidades
+	Desarrollar software y recopilar requerimientos de software
+	Información de contacto
+	l.lopez14@ufromail.cl
+	Aprobación
+	
+
+	   4. Definiciones, acrónimos y abreviaturas
+* Usuario Reportante: Persona que ingresa datos al sistema, como registrar el uso de medicamentos o reportar síntomas. 
+* Usuario Monitor: Persona que revisa, supervisa o gestiona la información del Reportante dentro del sistema. 
+* API: conjunto de reglas y protocolos que permite que dos aplicaciones de software compartan datos y funcionalidades. 
+* Software: Conjunto de código que genera una utilidad o desarrolla un sistema informático.
+* Frontend: Parte visible de la aplicación con la que el usuario interactúa (pantallas, botones y menús). 
+* Backend: Parte del sistema, invisible para el usuario, que gestiona la lógica del sistema, bases de datos, autenticación y seguridad 
+* Almacenamiento local: Es guardar información directamente en el dispositivo del usuario, como en su celular, para usarla incluso sin internet. 
+* Almacenamiento remoto: Es guardar información en servidores en internet (la nube) para poder acceder a ella desde cualquier lugar. 
+* Plataforma móvil: es un entorno, como Android o iOS, que permite el funcionamiento de aplicaciones en dispositivos portátiles 
+* Persistencia de datos: Es la capacidad de guardar información de forma permanente para que no se pierda al cerrar la aplicación o apagar el dispositivo. 
+
+
+   5. Referencias
+Referencia
+	Título
+	Ruta
+	Fecha
+	Autor
+	[1]
+	Evaluación de la adherencia terapéutica en pacientes con enfermedades crónicas hospitalizados en servicio de medicina interna
+	https://repositorio.uchile.cl/handle/2250/201491 
+	2023
+	Ayleen Nicole Letelier Chávez
+	[2]
+	Ley N° 20.584 - REGULA LOS DERECHOS Y DEBERES QUE TIENEN LAS PERSONAS EN RELACIÓN CON ACCIONES VINCULADAS A SU ATENCIÓN EN SALUD
+	https://www.bcn.cl/leychile/navegar?idNorma=1039348
+	2012
+	Biblioteca Nacional del Congreso
+	[3]
+	Ley N° 21.668 - MODIFICA LA LEY Nº 20.584 CON EL OBJETO DE ESTABLECER LA INTEROPERABILIDAD DE LAS FICHAS CLÍNICAS
+	https://www.bcn.cl/leychile/navegar?idNorma=1203827
+	2024
+	Biblioteca Nacional del Congreso
+	[4]
+	Ley N° 21.719 - REGULA LA PROTECCIÓN Y EL TRATAMIENTO DE LOS DATOS PERSONALES Y CREA LA AGENCIA DE PROTECCIÓN DE DATOS PERSONALES
+	https://www.bcn.cl/leychile/navegar?idNorma=1209272 
+	2024
+	Biblioteca Nacional del Congreso
+	
+
+
+
+   6. Resumen
+
+
+A continuación se plantea la solución a la problemática planteada anteriormente en el documento. Se contarán las principales características de este  proyecto, así como su funcionalidades, los usuarios y sus características, las restricciones, suposiciones y dependencias que se presenta este proyecto y la evolución que se prevé que tenga el sistema. También se presentan los requerimientos que se recopilaron, tanto funcionales como no funcionales, mediante distintas herramientas de educción.
+2. Descripción general
+   1. Perspectiva del producto
+
+
+La aplicación MedHelp se define como un producto independiente, concebido específicamente como una solución móvil para mejorar la adherencia terapéutica. 
+El sistema no es parte de un ecosistema de salud mayor preexistente, ya que no contempla la integración directa con sistemas clínicos externos, ni funcionalidades de diagnóstico médico o prescripción de tratamientos.
+A pesar de su independencia operativa, el sistema presenta una arquitectura que conecta la interfaz del usuario (Frontend) con una lógica de servidor (Backend) para la gestión de bases de datos y seguridad.
+La aplicación opera sobre plataformas móviles (Android e iOS) y requiere conexión a internet para la sincronización con almacenamiento remoto y el envío de alertas, aunque mantiene capacidades de funcionamiento básico mediante almacenamiento local
+  
+[a]
+	Diagrama C4 nivel 1: Contexto
+	
+
+
+
+
+
+   2. Funcionalidad del producto
+
+
+Las funcionalidades principales de MedHelp están diseñadas para ofrecer un ciclo completo de gestión del tratamiento farmacológico:
+Gestión de Tratamientos: Permite al "Usuario Reportante" registrar medicamentos, detallando información crítica como el nombre del fármaco, la dosis, la frecuencia y los horarios específicos de administración.
+Sistema de Notificaciones Automatizadas: Genera recordatorios push en el dispositivo móvil en los horarios programados para asegurar la toma oportuna de la medicación.
+Monitoreo y Registro de Consumo: El sistema permite confirmar la toma efectiva de cada dosis, almacenando estas acciones en un historial de consumo para su posterior consulta por parte del paciente o supervisión del monitor.
+Alertas a Contactos Externos: En caso de que el usuario no registre la confirmación de una dosis dentro de un intervalo de tiempo establecido, el sistema emite notificaciones a contactos designados (familiares o cuidadores) para permitir una intervención proactiva.
+Reporte de Farmacovigilancia: Ofrece una funcionalidad para que el usuario pueda reportar síntomas o reacciones adversas asociadas a su tratamiento.
+Gestión de Privacidad y Seguridad: Incluye mecanismos para otorgar consentimiento expreso sobre el tratamiento de datos sensibles y asegura que toda la información de salud esté cifrada durante el almacenamiento y la transmisión.
+   3. Características de los usuarios
+Tipo de usuario
+	Usuario reportante
+	Formación
+	Orientado a cualquier persona que tenga un tratamiento médico-farmacológico. [b]
+	Habilidades
+	Se estima un nivel de manejo tecnológico que varía entre bajo y medio
+	Actividades
+	Ingresar datos de su tratamiento (fármaco, dosis, frecuencia y horario)
+Confirmar la toma efectiva de cada dosis tras recibir notificaciones automáticas
+Reportar síntomas o reacciones adversas (farmacovigilancia)
+Otorgar consentimiento expreso para el tratamiento de sus datos sensibles de salud
+	Tipo de usuario
+	Usuario monitor
+	Formación
+	Familiares o cuidadores autorizados por el paciente. No necesariamente tienen formación médica, pero poseen un vínculo directo con el cuidado del paciente reportante.
+	Habilidades
+	Nivel de manejo tecnológico medio, suficiente para gestionar alertas y revisar historiales en una plataforma móvil
+	Actividades
+	Revisar, supervisar y gestionar la información del reportante dentro del sistema.
+Recibir alertas de incumplimiento si el paciente no confirma una toma dentro del intervalo de tiempo establecido.
+Monitorear el historial de consumo para intervenir proactivamente en caso de desviaciones en el tratamiento.
+	   4. Restricciones
+Restricciones Normativas y Legales: El sistema debe ceñirse estrictamente al marco legal chileno, específicamente a la Ley N° 20.584 (Derechos y Deberes en Salud), la Ley N° 21.668 (Interoperabilidad de Fichas Clínicas) y la Ley N° 21.719 sobre protección de datos personales
+
+
+Restricciones de plataforma: La aplicación está diseñada exclusivamente para plataformas móviles, siendo compatible con los sistemas operativos Android e iOS en sus versiones actualmente soportadas por sus respectivos fabricantes. No se contempla el desarrollo de una versión de escritorio o web en el alcance actual del proyecto.
+
+
+Restricciones de hardware: El dispositivo del usuario debe disponer de conexión a internet para la sincronización con el almacenamiento remoto y el envío de notificaciones a contactos externos. Sin embargo, las funcionalidades básicas de registro y consulta del historial deberán operar también en modo sin conexión, mediante almacenamiento local. Asimismo, el dispositivo deberá soportar el sistema de notificaciones push del sistema operativo correspondiente.
+
+
+Restricciones de diseño e interfaz: Dado que el perfil del usuario reportante corresponde a cualquier persona que quiera seguir un tratamiento se considera que contarán con un nivel tecnológico bajo o medio, la interfaz deberá seguir principios de diseño accesible: tipografía de tamaño legible, contraste visual adecuado, navegación simple y mensajes de retroalimentación claros.
+
+
+Restricciones de seguridad: Toda información sensible de salud almacenada en el dispositivo o transmitida hacia servicios remotos deberá estar cifrada. La comunicación entre el cliente móvil y los servicios backend deberá realizarse exclusivamente mediante protocolos seguros. El acceso a la aplicación requerirá autenticación del usuario.
+   5. Suposiciones y dependencias
+El desarrollo de MedHelp supone que los usuarios dispondrán de dispositivos móviles Android o iOS compatibles, con acceso periódico a internet y capacidad para recibir notificaciones push. Asimismo, se considera que los usuarios tendrán un nivel básico de manejo tecnológico que les permita registrar tratamientos, confirmar tomas y utilizar las funciones principales de la aplicación. También se asume que existirán contactos monitoreadores válidos para recibir alertas de incumplimiento terapéutico.
+El sistema depende de servicios externos como plataformas backend, bases de datos remotas, sistemas de notificaciones push y herramientas de cifrado para garantizar la sincronización y protección de la información médica. Además, su funcionamiento está condicionado al cumplimiento de la legislación chilena relacionada con datos de salud y privacidad, así como a las políticas de seguridad y permisos establecidas por Android e iOS.
+   6. Evolución previsible del sistema
+Se prevé que MedHelp evolucione hacia una plataforma más completa de monitoreo y apoyo terapéutico. En futuras versiones, podría integrarse con fichas clínicas electrónicas y sistemas hospitalarios, además de incorporar funcionalidades de telemedicina y herramientas basadas en inteligencia artificial para detectar riesgos o incumplimientos en los tratamientos.
+También se contempla la integración con dispositivos médicos inteligentes, la generación de reportes clínicos y el desarrollo de una versión web orientada a cuidadores o instituciones de salud. A largo plazo, el sistema podría transformarse en una solución escalable utilizada por organizaciones sanitarias para el seguimiento masivo de pacientes crónicos.
+3. Requisitos específicos
+Esta es la sección más extensa y más importante del documento. 
+Debe contener una lista detallada y completa de los requisitos que debe cumplir el sistema a desarrollar. El nivel de detalle de los requisitos debe ser el suficiente para que el equipo de desarrollo pueda diseñar un sistema que satisfaga los requisitos y los encargados de las pruebas puedan determinar si éstos se satisfacen.
+
+
+Los requisitos se dispondrán en forma de listas numeradas para su identificación, seguimiento, trazabilidad y validación (ej. RF 10, RF 10.1, RF 10.2,...).
+
+
+Para cada requisito debe completarse la siguiente tabla:
+
+
+Número de requisito
+	
+
+	Nombre de requisito
+	
+
+	Tipo
+	☐ Requisito
+	☐ Restricción
+	Fuente del requisito
+	
+
+	Prioridad del requisito
+	☐ Alta/Esencial
+	☐ Media/Deseado
+	☐ Baja/ Opcional
+	
+
+y realizar a continuación la descripción del requisito
+
+
+La distribución de los párrafos que forman este punto puede diferir del propuesto en esta plantilla, si las características del sistema aconsejan otra distribución para ofrecer mayor claridad en la exposición.
+   7. Requisitos comunes de los interfaces
+
+
+Descripción detallada de todas las entradas y salidas del sistema de software.
+      1. Interfaces de usuario
+
+
+Describir  los requisitos del interfaz de usuario para el producto. Esto puede estar en la forma de descripciones del texto o pantallas del interfaz. Por ejemplo posiblemente el cliente ha especificado el estilo y los colores del producto. Describa exacto cómo el producto aparecerá a su usuario previsto.
+      2. Interfaces de hardware
+
+
+Especificar las características lógicas para cada interfaz entre el producto y los componentes de hardware del sistema. Se incluirán características de configuración.
+      3. Interfaces de software
+
+
+Indicar si hay que integrar el producto con otros productos de software.
+Para cada producto de software debe especificarse lo siguiente:
+* Descripción del producto software utilizado
+* Propósito del interfaz
+* Definición del interfaz: contiendo y formato
+      1. Interfaces de comunicación
+
+
+Describir los requisitos del interfaces de comunicación si hay comunicaciones con otros sistemas y cuales son las protocolos de comunicación.
+   8. Requisitos funcionales
+
+
+Definición de acciones fundamentales que debe realizar el software al recibir información, procesarla y producir resultados. 
+En ellas se incluye:
+* Comprobación de validez de las entradas
+* Secuencia exacta de operaciones
+* Respuesta a situaciones anormales (desbordamientos, comunicaciones, recuperación de errores)
+* Parámetros
+* Generación de salidas
+* Relaciones entre entradas y salidas (secuencias de entradas y salidas, formulas para la conversión de información)
+* Especificación de los requisitos lógicos para la información que será  almacenada en base de datos (tipo de información, requerido)
+
+
+Las requisitos funcionales pueden ser divididos en sub-secciones.
+      2. Requisito funcional 1
+      3. Requisito funcional 2
+      4. Requisito funcional 3
+      5. Requisito funcional n
+   9. Requisitos no funcionales
+      1. Requisitos de rendimiento
+
+
+Especificación de los requisitos relacionados con la carga que se espera tenga que soportar el sistema. Por ejemplo, el número de terminales, el número esperado de usuarios simultáneamente conectados, número de transacciones por segundo que deberá soportar el sistema, etc.
+Todos estos requisitos deben ser mesurables. Por ejemplo, indicando “el 95% de las transacciones deben realizarse en menos de 1 segundo”, en lugar de “los operadores no deben esperar a que se complete la transacción”.
+      2. Seguridad
+
+
+Especificación de elementos que protegerán al software de accesos, usos y sabotajes maliciosos, así como de modificaciones o destrucciones maliciosas o accidentales. Los requisitos pueden especificar:
+* Empleo de técnicas criptográficas.
+* Registro de ficheros con “logs” de actividad.
+* Asignación de determinadas funcionalidades a determinados módulos.
+* Restricciones de comunicación entre determinados módulos.
+* Comprobaciones de integridad de información crítica.
+      1. Fiabilidad
+
+
+Especificación de los factores de fiabilidad necesaria del sistema. Esto se expresa generalmente como el tiempo entre los incidentes permisibles, o el total de incidentes permisible.
+      2. Disponibilidad
+
+
+Especificación de los factores de disponibilidad final exigidos al sistema. Normalmente expresados en % de tiempo en los que el software tiene que mostrar disponibilidad.
+      3. Mantenibilidad
+
+
+Identificación del tipo de mantenimiento necesario del sistema. 
+Especificación de quien debe realizar las tareas de mantenimiento, por ejemplo usuarios, o un desarrollador.
+Especificación de cuando debe realizarse las tareas de mantenimiento. Por ejemplo, generación de estadísticas de acceso semanales y mensuales.
+      4. Portabilidad
+
+
+Especificación de atributos que debe presentar el software para facilitar su traslado a otras plataformas u entornos. Pueden incluirse:
+* Porcentaje de componentes dependientes del servidor.
+* Porcentaje de código dependiente del servidor.
+* Uso de un determinado lenguaje por su portabilidad.
+* Uso de un determinado compilador o plataforma de desarrollo.
+* Uso de un determinado sistema operativo.
+   1. Otros requisitos
+
+
+Cualquier otro requisito que no encaje en ninguna de las secciones anteriores.
+
+
+Por ejemplo: 
+Requisitos culturales y políticos
+Requisitos Legales
+4. Apéndices
+
+
+Pueden contener todo tipo de información relevante para la SRS pero que, propiamente, no forme parte de la SRS.
+
+
+
+
+	
+
+	Descripción de requisitos del sofware
+	
+
+[a]Actualizar: 
+Eliminar Almacenamiento remoto.
+Definir Servicio de notificaciones Push: Firebase Cloud Messaging
+[b]Confirmar cambios
